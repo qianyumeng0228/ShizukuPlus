@@ -1,0 +1,198 @@
+{
+  "exactLines": [
+    { "source": "## Recent Changes", "target": "## 最近更新" },
+    { "source": "### ✨ New Features", "target": "### 新功能" },
+    { "source": "### 🐛 Bug Fixes", "target": "### 问题修复" },
+    { "source": "### 🔥 Crash & Stability Fixes", "target": "### 崩溃与稳定性修复" },
+    { "source": "### 🔧 Improvements & Refactors", "target": "### 改进与重构" },
+    { "source": "## 📦 Recent Releases", "target": "## 近期版本" },
+    { "source": "| Release | Highlight |", "target": "| 版本 | 重点 |" },
+    { "source": "|:--|:--|", "target": "|:--|:--|" },
+    { "source": "---", "target": "---" }
+  ],
+  "summaryRules": [
+    {
+      "source": "fix(#391): rish shell always treated as unidentified - UID fallback chain",
+      "target": "修复(#391)：rish shell 总是被识别为未确认身份，完善 UID 回退链"
+    },
+    {
+      "source": "fix/refactor: receiver main-thread sleep, ONEWAY reply, caps null-check",
+      "target": "修复/重构：修复广播接收器主线程休眠、ONEWAY 应答和能力标志空值检查"
+    },
+    {
+      "source": "chore: bump api submodule - remove legacy case 14 from isLegacy switch",
+      "target": "维护：更新 api 子模块，移除 isLegacy 判断中的旧版 case 14"
+    },
+    {
+      "source": "fix: bump api - dead code17 handler + data-position reset in onTransact (#406/#380/#381/#385/#386/#394)",
+      "target": "修复：更新 api，清理 code17 处理逻辑，并在 onTransact 中重置 data position (#406/#380/#381/#385/#386/#394)"
+    },
+    {
+      "source": "server: re-apply power-save whitelist on each bindApplication retry",
+      "target": "服务端：每次 bindApplication 重试时重新应用省电白名单"
+    },
+    {
+      "source": "improve(#403): monitor RNDIS/Ethernet transport and clarify Watchdog scope",
+      "target": "改进(#403)：监控 RNDIS/以太网传输方式，并明确 Watchdog 作用范围"
+    },
+    {
+      "source": "fix(#387): retry binder delivery and show actionable feedback on frozen-app failure",
+      "target": "修复(#387)：重试 binder 投递，并在应用冻结导致失败时显示可操作提示"
+    },
+    {
+      "source": "fix(#400, #402): fix live activity notification respecting toggle, fix SU bridge redeploy on read-only dex",
+      "target": "修复(#400, #402)：实时活动通知遵循开关设置，并修复只读 dex 环境下 SU bridge 重新部署的问题"
+    },
+    {
+      "source": "chore: add settings XML string reference check to pre-push guard",
+      "target": "维护：为 pre-push guard 增加设置 XML 字符串引用检查"
+    },
+    {
+      "source": "fix: correct string references in settings_shizuku_plus.xml",
+      "target": "修复：修正 settings_shizuku_plus.xml 中的字符串引用"
+    },
+    {
+      "source": "feat: auto-run snippets on Shizuku service start (#399)",
+      "target": "新功能：Shizuku 服务启动时自动运行代码片段 (#399)"
+    },
+    {
+      "source": "fix: allow rish for apps w/o Shizuku permission in manifest (#387)",
+      "target": "修复：允许 manifest 中未声明 Shizuku 权限的应用使用 rish (#387)"
+    },
+    {
+      "source": "feat: log shell consent events to activity log",
+      "target": "新功能：将 shell 授权确认事件记录到活动日志"
+    },
+    {
+      "source": "feat: add Allow/Deny action buttons to shell consent notification",
+      "target": "新功能：在 shell 授权确认通知中添加允许/拒绝操作按钮"
+    },
+    {
+      "source": "fix: re-grant OS permissions for pre-July-19 authorized apps on server start; add plain backup export",
+      "target": "修复：服务端启动时为 7 月 19 日之前已授权的应用重新授予系统权限；新增纯文本备份导出"
+    },
+    {
+      "source": "feat: Edge-to-Edge toggle, Frosted Glass blur, and One UI theme mode",
+      "target": "新功能：新增 Edge-to-Edge 开关、Frosted Glass 模糊和 One UI 主题模式"
+    },
+    {
+      "source": "fix: replace hardcoded accent/neutral colors with M3 theme attributes",
+      "target": "修复：用 M3 主题属性替换硬编码的强调色/中性色"
+    },
+    {
+      "source": "fix: correct One UI overlay order in theme key and comment",
+      "target": "修复：修正主题键和注释中的 One UI 覆盖层顺序"
+    },
+    {
+      "source": "fix: eliminate theme-change black screen and add One UI preference styling",
+      "target": "修复：消除切换主题时的黑屏，并加入 One UI 偏好设置样式"
+    },
+    {
+      "source": "Fix Plus feature wiring, settings structure, theming, and edge-to-edge insets",
+      "target": "修复 Plus 功能联动、设置结构、主题和 edge-to-edge 边距处理"
+    }
+  ],
+  "phraseRules": [
+    {
+      "source": "Third-party apps that Shizuku+ grants permissions to (WifiList, App Ops, Hail, Tasker, and others) now reliably detect and connect to the service. Closed the last gap in the Cached Apps Freezer guard: a UserService's very first connect callback could be silently dropped if the client app was frozen in the background while its process was still starting.",
+      "target": "Shizuku+ 授权的第三方应用（WifiList、App Ops、Hail、Tasker 等）现在可以可靠地检测并连接服务。补齐了缓存应用冻结保护的最后一个缺口：如果客户端应用在后台被冻结，且其进程仍在启动，UserService 的首次连接回调可能会被静默丢弃。"
+    },
+    {
+      "source": "Releases r2141-r2152 all shipped the Drop-In build under the Plus APK's filename - anyone who installed \"Shizuku+\" in that window actually got moe.shizuku.privileged.api, which fails to install or update alongside stock Shizuku. Fixed by selecting release assets by verified applicationId instead of directory order.",
+      "target": "r2141-r2152 这些版本都把 Drop-In 版本打包到了 Plus APK 的文件名下；在此期间安装“Shizuku+”的用户实际得到的是 moe.shizuku.privileged.api，因此无法与原版 Shizuku 并存安装或更新。现已改为按校验后的 applicationId 选择发布资产，而不是依赖目录顺序。"
+    },
+    { "source": "Most recent major release", "target": "最近的重要版本" },
+    { "source": "Most recent critical fix", "target": "最近的关键修复" },
+    { "source": "this release", "target": "本版本" },
+    { "source": "Full Changelog", "target": "完整变更记录" },
+    { "source": "Changes since", "target": "相比" },
+    { "source": "Recent Changes", "target": "最近更新" },
+    { "source": "New Features", "target": "新功能" },
+    { "source": "Bug Fixes", "target": "问题修复" },
+    { "source": "Crash & Stability Fixes", "target": "崩溃与稳定性修复" },
+    { "source": "Improvements & Refactors", "target": "改进与重构" },
+    { "source": "Recent Releases", "target": "近期版本" },
+    { "source": "stock Shizuku", "target": "原版 Shizuku" },
+    { "source": "Stock Shizuku", "target": "原版 Shizuku" },
+    { "source": "Drop-In build", "target": "Drop-In 版本" },
+    { "source": "Plus APK's filename", "target": "Plus APK 的文件名" },
+    { "source": "Plus APK", "target": "Plus APK" },
+    { "source": "third-party apps", "target": "第三方应用" },
+    { "source": "Third-party apps", "target": "第三方应用" },
+    { "source": "grants permissions to", "target": "授权给" },
+    { "source": "reliably detect and connect to the service", "target": "可靠地检测并连接服务" },
+    { "source": "Cached Apps Freezer guard", "target": "缓存应用冻结保护" },
+    { "source": "first connect callback", "target": "首次连接回调" },
+    { "source": "silently dropped", "target": "静默丢弃" },
+    { "source": "frozen in the background", "target": "在后台被冻结" },
+    { "source": "process was still starting", "target": "进程仍在启动" },
+    { "source": "verified applicationId", "target": "校验后的 applicationId" },
+    { "source": "directory order", "target": "目录顺序" },
+    { "source": "receiver", "target": "广播接收器" },
+    { "source": "main-thread sleep", "target": "主线程休眠" },
+    { "source": "caps null-check", "target": "能力标志空值检查" },
+    { "source": "submodule", "target": "子模块" },
+    { "source": "remove legacy case", "target": "移除旧版 case" },
+    { "source": "always treated as unidentified", "target": "总是被识别为未确认身份" },
+    { "source": "UID fallback chain", "target": "UID 回退链" },
+    { "source": "power-save whitelist", "target": "省电白名单" },
+    { "source": "bindApplication retry", "target": "bindApplication 重试" },
+    { "source": "transport", "target": "传输方式" },
+    { "source": "Watchdog scope", "target": "Watchdog 作用范围" },
+    { "source": "frozen-app failure", "target": "应用冻结导致失败" },
+    { "source": "live activity notification", "target": "实时活动通知" },
+    { "source": "respecting toggle", "target": "遵循开关设置" },
+    { "source": "read-only dex", "target": "只读 dex" },
+    { "source": "settings XML string reference check", "target": "设置 XML 字符串引用检查" },
+    { "source": "string references", "target": "字符串引用" },
+    { "source": "Shizuku service start", "target": "Shizuku 服务启动" },
+    { "source": "shell consent", "target": "shell 授权确认" },
+    { "source": "activity log", "target": "活动日志" },
+    { "source": "Allow/Deny action buttons", "target": "允许/拒绝操作按钮" },
+    { "source": "OS permissions", "target": "系统权限" },
+    { "source": "authorized apps", "target": "已授权应用" },
+    { "source": "server start", "target": "服务端启动" },
+    { "source": "plain backup export", "target": "纯文本备份导出" },
+    { "source": "theme-change black screen", "target": "切换主题时的黑屏" },
+    { "source": "preference styling", "target": "偏好设置样式" },
+    { "source": "theming", "target": "主题" },
+    { "source": "insets", "target": "边距处理" },
+    { "source": "bump api submodule", "target": "更新 api 子模块" },
+    { "source": "remove legacy case 14 from isLegacy switch", "target": "移除 isLegacy 判断中的旧版 case 14" },
+    { "source": "shipped the Drop-In build under the Plus APK's filename", "target": "把 Drop-In 版本打包到了 Plus APK 的文件名下" },
+    { "source": "anyone who installed \"Shizuku+\" in that window actually got moe.shizuku.privileged.api", "target": "在此期间安装“Shizuku+”的用户实际得到的是 moe.shizuku.privileged.api" },
+    { "source": "which fails to install or update alongside stock Shizuku", "target": "因此无法与原版 Shizuku 并存安装或更新" },
+    { "source": "Fixed by selecting release assets by verified applicationId instead of directory order.", "target": "现已改为按校验后的 applicationId 选择发布资产，而不是依赖目录顺序。" }
+  ],
+  "protectedTerms": [
+    "Shizuku",
+    "Shizuku+",
+    "ShizukuPlus",
+    "Drop-In",
+    "Compat",
+    "ADB",
+    "UID",
+    "UserService",
+    "applicationId",
+    "RNDIS",
+    "ONEWAY",
+    "api",
+    "binder",
+    "rish",
+    "shell",
+    "SU bridge",
+    "dex",
+    "manifest",
+    "onTransact",
+    "isLegacy",
+    "M3",
+    "One UI",
+    "Edge-to-Edge",
+    "Frosted Glass",
+    "pre-push guard",
+    "WifiList",
+    "App Ops",
+    "Hail",
+    "Tasker"
+  ]
+}

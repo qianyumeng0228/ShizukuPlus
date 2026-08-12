@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.noties.markwon.Markwon
 import af.shizuku.manager.R
 import af.shizuku.manager.update.ReleaseConfig
+import af.shizuku.manager.update.ReleaseNotesTranslator
 import timber.log.Timber
 
 /**
@@ -67,7 +68,7 @@ class ChangelogDialogFragment : DialogFragment() {
         private val COMMIT_HASH_SUFFIX = Regex("""\s+\([0-9a-f]{7,8}\)$""", RegexOption.MULTILINE)
 
         private fun formatForDialog(rawNotes: String): String =
-            rawNotes.substringBefore("## 📦 Recent Releases")
+            ReleaseNotesTranslator.stripRecentReleases(rawNotes)
                 .replace(COMMIT_HASH_SUFFIX, "")
                 .trim()
     }

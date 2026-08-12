@@ -48,6 +48,7 @@ import af.shizuku.manager.settings.SettingsActivity
 import af.shizuku.manager.update.UpdateChecker
 import af.shizuku.manager.update.UpdateManager
 import af.shizuku.manager.update.ReleaseConfig
+import af.shizuku.manager.update.ReleaseNotesTranslator
 import af.shizuku.manager.utils.AppIconCache
 import af.shizuku.manager.utils.EnvironmentUtils
 import io.noties.markwon.Markwon
@@ -654,7 +655,7 @@ open class HomeActivity : AppActivity(), MavericksView {
         // and bracketed links to users. Drop the "Recent Releases" rollup (table/links meant for
         // the GitHub page, not a compact popup) the same way ChangelogDialogFragment does.
         val notesBody = updateInfo.releaseNotes
-            .substringBefore("## 📦 Recent Releases")
+            .let { ReleaseNotesTranslator.stripRecentReleases(it) }
             .trim()
             .ifEmpty { getString(R.string.update_no_release_notes) }
         val releaseNotesView = dialogView.findViewById<TextView>(R.id.update_release_notes)
