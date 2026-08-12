@@ -3,6 +3,7 @@ package af.shizuku.manager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import af.shizuku.manager.update.ReleaseConfig
 import af.shizuku.manager.utils.MultiLocaleEntity
 
 object Helps {
@@ -29,9 +30,9 @@ object Helps {
     }
 
     val DOWNLOAD = MultiLocaleEntity().apply {
-        put("zh-CN", "https://github.com/thejaustin/ShizukuPlus/releases")
-        put("zh-TW", "https://github.com/thejaustin/ShizukuPlus/releases")
-        put("en", "https://github.com/thejaustin/ShizukuPlus/releases")
+        put("zh-CN", ReleaseConfig.RELEASES_URL)
+        put("zh-TW", ReleaseConfig.RELEASES_URL)
+        put("en", ReleaseConfig.RELEASES_URL)
     }
 
     val ADB_PERMISSION = MultiLocaleEntity().apply {

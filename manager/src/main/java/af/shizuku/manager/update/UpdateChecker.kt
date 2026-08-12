@@ -25,11 +25,11 @@ import java.util.TimeZone
 object UpdateChecker {
 
     private const val TAG = "UpdateChecker"
-    private const val RELEASES_URL = "https://api.github.com/repos/thejaustin/ShizukuPlus/releases"
+    private const val RELEASES_URL = ReleaseConfig.API_RELEASES_URL
     private const val LATEST_URL = "$RELEASES_URL/latest"
     // Fallback: GitHub's Atom feed is served from github.com CDN — different IP range
     // than api.github.com, so routing issues specific to that host don't affect it.
-    private const val ATOM_URL = "https://github.com/thejaustin/ShizukuPlus/releases.atom"
+    private const val ATOM_URL = ReleaseConfig.ATOM_URL
     private const val CONNECT_TIMEOUT_MS = 5_000
     private const val READ_TIMEOUT_MS = 8_000
     private const val RETRY_DELAY_MS = 2_000L
@@ -120,7 +120,7 @@ object UpdateChecker {
         val assets = json.getJSONArray("assets")
         val downloadUrl = (0 until assets.length())
             .map { assets.getJSONObject(it) }
-            .firstOrNull { it.getString("name").endsWith(".apk") }
+            .firstOrNull { it.isMatchingApkAsset() }
             ?.getString("browser_download_url")
             ?: return CheckResult.UpToDate
 
@@ -228,6 +228,17 @@ object UpdateChecker {
             return if (body.trimStart().startsWith("[")) JSONArray(body) else JSONObject(body)
         } finally {
             connection.disconnect()
+        }
+    }
+
+    private fun JSONObject.isMatchingApkAsset(): Boolean {
+        val name = optString("name", "")
+        if (!name.endsWith(".apk", ignoreCase = true)) return false
+        return if (BuildConfig.APPLICATION_ID == "moe.shizuku.privileged.api") {
+            name.contains("Drop-In", ignoreCase = true)
+        } else {
+            !name.contains("Drop-In", ignoreCase = true) &&
+                !name.contains("Compat", ignoreCase = true)
         }
     }
 

@@ -13,6 +13,7 @@ import androidx.fragment.app.DialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.noties.markwon.Markwon
 import af.shizuku.manager.R
+import af.shizuku.manager.update.ReleaseConfig
 import timber.log.Timber
 
 /**
@@ -89,8 +90,7 @@ class ChangelogDialogFragment : DialogFragment() {
             .setPositiveButton(R.string.changelog_close, null)
             .setNeutralButton(R.string.changelog_view_on_github) { _, _ ->
                 try {
-                    val url = "https://github.com/thejaustin/ShizukuPlus/releases/tag/$tagName"
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ReleaseConfig.releaseTagUrl(tagName))))
                 } catch (e: Exception) {
                     Timber.w(e, "Failed to open release page for $tagName")
                 }

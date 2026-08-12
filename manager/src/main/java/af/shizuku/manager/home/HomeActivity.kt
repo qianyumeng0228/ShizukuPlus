@@ -47,6 +47,7 @@ import af.shizuku.manager.management.AppsViewModel
 import af.shizuku.manager.settings.SettingsActivity
 import af.shizuku.manager.update.UpdateChecker
 import af.shizuku.manager.update.UpdateManager
+import af.shizuku.manager.update.ReleaseConfig
 import af.shizuku.manager.utils.AppIconCache
 import af.shizuku.manager.utils.EnvironmentUtils
 import io.noties.markwon.Markwon
@@ -663,7 +664,7 @@ open class HomeActivity : AppActivity(), MavericksView {
         val openReleases = {
             startActivity(
                 android.content.Intent(android.content.Intent.ACTION_VIEW,
-                    android.net.Uri.parse("https://github.com/thejaustin/ShizukuPlus/releases"))
+                    android.net.Uri.parse(ReleaseConfig.RELEASES_URL))
                     .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
             )
         }
