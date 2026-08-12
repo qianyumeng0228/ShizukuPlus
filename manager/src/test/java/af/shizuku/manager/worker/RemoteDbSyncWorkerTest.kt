@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.work.ListenableWorker.Result
 import androidx.work.WorkerParameters
 import af.shizuku.manager.ShizukuSettings
-import af.shizuku.manager.utils.AppContextManager
+import af.shizuku.manager.database.AppContextManager
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every

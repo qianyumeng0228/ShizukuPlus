@@ -112,8 +112,8 @@ class MainActivity : HomeActivity() {
         val tagName = "v$versionPart"
 
         lifecycleScope.launch {
-            val notes = try {
-                UpdateChecker.fetchReleaseNotesForTag(tagName)
+            val notesInfo = try {
+                UpdateChecker.fetchReleaseNotesInfoForTag(tagName)
             } catch (e: Exception) {
                 Timber.tag("MainActivity").w(e, "Failed to fetch changelog for $tagName")
                 null
@@ -125,7 +125,7 @@ class MainActivity : HomeActivity() {
 
             if (isFinishing || isDestroyed) return@launch
             try {
-                ChangelogDialogFragment.newInstance(notes, tagName)
+                ChangelogDialogFragment.newInstance(notesInfo?.body, tagName, notesInfo?.sourceUrl)
                     .show(supportFragmentManager, ChangelogDialogFragment.TAG)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to show changelog dialog")

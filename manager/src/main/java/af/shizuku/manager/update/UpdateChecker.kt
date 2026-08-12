@@ -12,6 +12,7 @@ import java.net.UnknownHostException
 import javax.net.ssl.SSLException
 import kotlinx.coroutines.withContext
 import af.shizuku.manager.BuildConfig
+import af.shizuku.manager.ShizukuSettings
 import org.json.JSONArray
 import org.json.JSONObject
 import org.xmlpull.v1.XmlPullParser
@@ -42,7 +43,13 @@ object UpdateChecker {
         val publishedAt: String,
         val isPrerelease: Boolean,
         // True when only the Atom fallback succeeded — no direct APK URL available.
-        val requiresManualDownload: Boolean = false
+        val requiresManualDownload: Boolean = false,
+        val releaseNotesUrl: String = ReleaseConfig.releaseTagUrl("v$versionName")
+    )
+
+    data class ReleaseNotesInfo(
+        val body: String,
+        val sourceUrl: String
     )
 
     sealed class CheckResult {
@@ -114,8 +121,14 @@ object UpdateChecker {
         val tagName = json.getString("tag_name")
         val versionName = tagName.removePrefix("v")
         val isPrerelease = json.getBoolean("prerelease")
-        val releaseNotes = json.optString("body", "")
         val publishedAt = json.getString("published_at")
+        val versionCode = parseVersionCode(versionName)
+        val currentVersionCode = parseVersionCode(BuildConfig.VERSION_NAME)
+
+        if (versionCode <= currentVersionCode) {
+            Timber.tag(TAG).d("Already on latest ($channel): ${BuildConfig.VERSION_NAME}")
+            return CheckResult.UpToDate
+        }
 
         val assets = json.getJSONArray("assets")
         val downloadUrl = (0 until assets.length())
@@ -124,18 +137,26 @@ object UpdateChecker {
             ?.getString("browser_download_url")
             ?: return CheckResult.UpToDate
 
-        val versionCode = parseVersionCode(versionName)
-        val currentVersionCode = parseVersionCode(BuildConfig.VERSION_NAME)
+        val upstreamTagName = ReleaseConfig.upstreamTagFor(tagName)
+        val releaseNotesInfo = fetchTranslatedReleaseNotes(
+            upstreamTagName,
+            json.optString("body", ""),
+            ReleaseConfig.releaseTagUrl(tagName)
+        )
 
-        return if (versionCode > currentVersionCode) {
-            Timber.tag(TAG).d("Update available: $versionName (channel=$channel, current=${BuildConfig.VERSION_NAME})")
-            CheckResult.UpdateAvailable(
-                UpdateInfo(versionName, versionCode, releaseNotes, downloadUrl, publishedAt, isPrerelease)
+        Timber.tag(TAG).d("Update available: $versionName (channel=$channel, current=${BuildConfig.VERSION_NAME})")
+        return CheckResult.UpdateAvailable(
+            UpdateInfo(
+                versionName,
+                versionCode,
+                releaseNotesInfo.body,
+                downloadUrl,
+                publishedAt,
+                isPrerelease,
+                false,
+                releaseNotesInfo.sourceUrl
             )
-        } else {
-            Timber.tag(TAG).d("Already on latest ($channel): ${BuildConfig.VERSION_NAME}")
-            CheckResult.UpToDate
-        }
+        )
     }
 
     /**
@@ -147,8 +168,20 @@ object UpdateChecker {
      */
     suspend fun fetchReleaseNotesForTag(tag: String): String? = withContext(Dispatchers.IO) {
         try {
-            val json = fetchJson("$RELEASES_URL/tags/$tag") as? JSONObject ?: return@withContext null
-            json.optString("body", "").takeIf { it.isNotBlank() }
+            fetchReleaseNotesInfoForTag(tag)?.body
+        } catch (e: Exception) {
+            Timber.tag(TAG).w(e, "Failed to fetch release notes for tag $tag")
+            null
+        }
+    }
+
+    suspend fun fetchReleaseNotesInfoForTag(tag: String): ReleaseNotesInfo? = withContext(Dispatchers.IO) {
+        try {
+            fetchTranslatedReleaseNotes(
+                ReleaseConfig.upstreamTagFor(tag),
+                null,
+                ReleaseConfig.releaseTagUrl(tag)
+            ).takeIf { it.body.isNotBlank() }
         } catch (e: Exception) {
             Timber.tag(TAG).w(e, "Failed to fetch release notes for tag $tag")
             null
@@ -193,7 +226,8 @@ object UpdateChecker {
                                 publishedAt = "",
                                 isPrerelease = versionName.contains("beta", ignoreCase = true)
                                         || versionName.contains("alpha", ignoreCase = true),
-                                requiresManualDownload = true
+                                requiresManualDownload = true,
+                                releaseNotesUrl = ReleaseConfig.upstreamReleaseTagUrl(tagName)
                             )
                         }
                         return null // First release entry checked — already up to date
@@ -229,6 +263,52 @@ object UpdateChecker {
         } finally {
             connection.disconnect()
         }
+    }
+
+    private fun fetchTranslatedReleaseNotes(
+        tag: String,
+        fallbackNotes: String?,
+        fallbackUrl: String
+    ): ReleaseNotesInfo {
+        runCatching { fetchUpstreamReleaseNotesForTag(tag) }.getOrNull()?.let {
+            return ReleaseNotesInfo(
+                body = translateReleaseNotes(it.body),
+                sourceUrl = it.sourceUrl
+            )
+        }
+
+        runCatching { fetchLatestUpstreamReleaseNotesFor(tag) }.getOrNull()?.let {
+            return ReleaseNotesInfo(
+                body = translateReleaseNotes(it.body),
+                sourceUrl = it.sourceUrl
+            )
+        }
+
+        return ReleaseNotesInfo(
+            body = translateReleaseNotes(fallbackNotes ?: ""),
+            sourceUrl = fallbackUrl
+        )
+    }
+
+    private fun translateReleaseNotes(notes: String): String =
+        ReleaseNotesTranslator.translateIfNeeded(notes, ShizukuSettings.getLocale()).trim()
+
+    private fun fetchUpstreamReleaseNotesForTag(tag: String): ReleaseNotesInfo? {
+        val json = fetchJson("${ReleaseConfig.UPSTREAM_API_RELEASES_URL}/tags/$tag") as? JSONObject
+            ?: return null
+        val body = json.optString("body", "").takeIf { it.isNotBlank() } ?: return null
+        val sourceUrl = json.optString("html_url", ReleaseConfig.upstreamReleaseTagUrl(tag))
+        return ReleaseNotesInfo(body, sourceUrl)
+    }
+
+    private fun fetchLatestUpstreamReleaseNotesFor(tag: String): ReleaseNotesInfo? {
+        val json = fetchJson("${ReleaseConfig.UPSTREAM_API_RELEASES_URL}/latest") as? JSONObject
+            ?: return null
+        val latestTag = json.optString("tag_name", "")
+        if (ReleaseConfig.upstreamTagFor(latestTag) != ReleaseConfig.upstreamTagFor(tag)) return null
+        val body = json.optString("body", "").takeIf { it.isNotBlank() } ?: return null
+        val sourceUrl = json.optString("html_url", ReleaseConfig.upstreamReleaseTagUrl(latestTag))
+        return ReleaseNotesInfo(body, sourceUrl)
     }
 
     private fun JSONObject.isMatchingApkAsset(): Boolean {

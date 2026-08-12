@@ -649,7 +649,7 @@ open class HomeActivity : AppActivity(), MavericksView {
             if (updateInfo.publishedAt.isNotEmpty())
                 getString(R.string.update_published_date, UpdateChecker.formatPublishedDate(updateInfo.publishedAt))
             else ""
-        // updateInfo.releaseNotes is the raw GitHub release body (Markdown) - render it instead
+        // updateInfo.releaseNotes is localized GitHub release Markdown - render it instead
         // of dumping it as plain text, which showed literal "**", "###", "|...|" table syntax
         // and bracketed links to users. Drop the "Recent Releases" rollup (table/links meant for
         // the GitHub page, not a compact popup) the same way ChangelogDialogFragment does.
@@ -668,12 +668,19 @@ open class HomeActivity : AppActivity(), MavericksView {
                     .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
             )
         }
+        val openReleaseNotes = {
+            startActivity(
+                android.content.Intent(android.content.Intent.ACTION_VIEW,
+                    android.net.Uri.parse(updateInfo.releaseNotesUrl))
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
 
         val builder = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.update_available_title)
             .setView(dialogView)
             .setNegativeButton(R.string.update_later, null)
-            .setNeutralButton(R.string.update_release_notes) { _, _ -> openReleases() }
+            .setNeutralButton(R.string.update_release_notes) { _, _ -> openReleaseNotes() }
 
         if (updateInfo.requiresManualDownload) {
             builder.setPositiveButton(R.string.update_view_on_github) { _, _ -> openReleases() }
