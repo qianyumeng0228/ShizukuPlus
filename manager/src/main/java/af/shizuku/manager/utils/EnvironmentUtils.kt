@@ -32,15 +32,14 @@ object EnvironmentUtils {
         return (getAdbTcpPort() <= 0 || !ShizukuSettings.getTcpMode())
     }
 
-    // Warm up the root check eagerly on a daemon background thread the moment this
-    // class is first accessed. By the time any UI code calls isRooted() the result
-    // is almost always already available. If it isn't, we return false immediately
-    // rather than blocking — an ANR-free false-negative is far better than a 500 ms
-    // main-thread stall (the old Future.get() approach that caused SHIZUKUPLUS-45).
+    // Warm up the root check eagerly when the class is loaded.
+    // checkSuExists() just performs basic file stats and does not spawn an su process,
+    // so it is safe and fast enough to run synchronously if needed.
     @Volatile
     private var isRootedCached: Boolean? = null
 
     init {
+        // Still prewarm in background to avoid any potential main thread hit during class load
         startRootCheck()
     }
 
@@ -50,17 +49,25 @@ object EnvironmentUtils {
     }
 
     private fun startRootCheck() {
+        if (isRootedCached != null) return
         val t = Thread({
-            val result = try { checkSuExists() } catch (_: Exception) { false }
-            isRootedCached = result
+            if (isRootedCached == null) {
+                isRootedCached = try { checkSuExists() } catch (_: Exception) { false }
+            }
         }, "root-check")
         t.isDaemon = true
         t.start()
     }
 
-    /** Returns the cached root-check result, or false if not yet computed.
-     *  Never blocks the calling thread. */
-    fun isRooted(): Boolean = isRootedCached ?: false
+    /** Returns the cached root-check result, or computes it synchronously if not yet available. */
+    fun isRooted(): Boolean {
+        var result = isRootedCached
+        if (result == null) {
+            result = try { checkSuExists() } catch (_: Exception) { false }
+            isRootedCached = result
+        }
+        return result
+    }
 
     private fun checkSuExists(): Boolean {
         val paths = System.getenv("PATH")?.split(":")?.toMutableList() ?: mutableListOf()

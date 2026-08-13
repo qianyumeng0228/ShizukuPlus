@@ -110,7 +110,7 @@ class AdvancedSettingsFragment : BaseSettingsFragment() {
                         keyStore.load(null)
                         keyStore.deleteEntry("_adbkey_encryption_key_")
                         Toast.makeText(context, R.string.settings_reset_adb_keys_success, Toast.LENGTH_SHORT).show()
-                        (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+                        (activity as? SettingsActivity)?.onThemeChanged()
                     } catch (e: Exception) {
                         Timber.tag("AdvancedSettings").e(e, "Failed to reset ADB keys")
                         Toast.makeText(context, R.string.settings_reset_adb_keys_error, Toast.LENGTH_LONG).show()

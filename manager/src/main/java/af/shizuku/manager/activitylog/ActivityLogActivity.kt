@@ -50,7 +50,8 @@ class ActivityLogFragment : Fragment() {
             val bars = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             )
-            view.setPadding(bars.left, view.paddingTop, bars.right, bars.bottom)
+            val navBarClearancePx = (72 * resources.displayMetrics.density).toInt()
+            view.setPadding(bars.left, view.paddingTop, bars.right, bars.bottom + navBarClearancePx)
             insets
         }
 

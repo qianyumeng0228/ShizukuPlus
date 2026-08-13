@@ -76,7 +76,21 @@ object AuthorizationManager {
 
     fun granted(packageName: String, uid: Int): Boolean {
         return try {
-            if (!Shizuku.pingBinder()) return false
+            // Retry pingBinder up to 3x with 200 ms back-off: a momentary binder drop
+            // (common right after a consent-action broadcast wakes the process) used to
+            // cause granted() to return false and re-prompt the user on every new rish
+            // invocation even though AuthorizationManager.grant() had already stored the
+            // grant for that UID (#398).
+            var binderAlive = Shizuku.pingBinder()
+            if (!binderAlive) {
+                repeat(3) {
+                    if (!binderAlive) {
+                        Thread.sleep(200)
+                        binderAlive = Shizuku.pingBinder()
+                    }
+                }
+            }
+            if (!binderAlive) return false
             if (Shizuku.isPreV11()) {
                 ShizukuSystemApis.checkPermission(Manifest.permission.API_V23, packageName, uid / 100000) == PackageManager.PERMISSION_GRANTED
             } else {

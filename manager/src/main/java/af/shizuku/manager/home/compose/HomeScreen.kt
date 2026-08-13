@@ -23,7 +23,7 @@ import androidx.compose.runtime.getValue
 import af.shizuku.core.ui.compose.Button
 import af.shizuku.core.ui.compose.ButtonSize
 import af.shizuku.manager.ShizukuSettings
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.graphics.graphicsLayer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,19 +81,29 @@ fun HomeScreen(
             )
         }
     ) { innerPadding ->
-        // One-handed mode: add top padding equal to 28% of screen height so home cards
-        // sit in the lower, thumb-reachable zone. clipToPadding=false on the RecyclerView
-        // ensures the content is still scrollable into the full height.
-        val oneHandedExtraTopDp = if (ShizukuSettings.isOneHandedModeEnabled())
-            (LocalConfiguration.current.screenHeightDp * 0.28f).dp
-        else 0.dp
+        // Samsung OneUI one-handed mode: scale content to 75% and anchor to bottom-right corner,
+        // matching Samsung's actual one-handed mode behavior instead of just adding top padding.
+        // animateFloatAsState provides a smooth spring-physics transition when toggling the mode.
+        val isOneHanded = ShizukuSettings.isOneHandedModeEnabled()
+        val scale by animateFloatAsState(
+            targetValue = if (isOneHanded) 0.75f else 1f,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+            label = "oneHandedScale"
+        )
         val adjustedPadding = PaddingValues(
-            top = innerPadding.calculateTopPadding() + oneHandedExtraTopDp,
-            bottom = innerPadding.calculateBottomPadding()
+            top = innerPadding.calculateTopPadding(),
+            bottom = innerPadding.calculateBottomPadding() + 72.dp
         )
         AnimatedGradientBackground {
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        // Pivot at bottom-right corner (Samsung OneUI style)
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 1f)
+                    )
             ) {
             if (showEmptyState) {
                 Box(modifier = Modifier.padding(adjustedPadding)) {

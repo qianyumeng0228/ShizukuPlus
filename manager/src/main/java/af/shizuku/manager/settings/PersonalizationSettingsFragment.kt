@@ -20,6 +20,14 @@ import java.util.Locale
 
 class PersonalizationSettingsFragment : BaseSettingsFragment() {
 
+    private fun applyTheme(requiresRecreate: Boolean = false) {
+        if (requiresRecreate) {
+            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+        } else {
+            (activity as? SettingsActivity)?.onThemeChanged()
+        }
+    }
+
     override fun getTitle(): CharSequence? = getString(R.string.settings_appearance_title)
 
     private var colorThemeCategory: CollapsiblePreferenceCategory? = null
@@ -57,7 +65,7 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
                     if (ShizukuSettings.getNightMode() != value) {
                         AppCompatDelegate.setDefaultNightMode(value)
                         syncDependentVisibility()
-                        (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+                        applyTheme(requiresRecreate = true)
                     }
                 }
                 true
@@ -71,7 +79,7 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
                 isChecked = ThemeHelper.isBlackNightTheme(context)
                 setOnPreferenceChangeListener { _, _ ->
                     if (ResourceUtils.isNightMode(context.resources.configuration))
-                        (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+                        applyTheme(requiresRecreate = false)
                     true
                 }
             }
@@ -86,7 +94,7 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
                     if (value is Boolean) {
                         if (ThemeHelper.isUsingSystemColor() != value) {
                             customAccentPreference.isEnabled = !value
-                            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+                            applyTheme(requiresRecreate = false)
                         }
                     }
                     true
@@ -104,7 +112,7 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
                     if (prefs.getString("custom_accent", "DEFAULT") != newValue) {
                         prefs.edit().putString("custom_accent", newValue).apply()
                         summary = getCustomAccentSummary(newValue)
-                        (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+                        applyTheme(requiresRecreate = false)
                     }
                 }
                 true
@@ -124,32 +132,32 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
         iconColorModePreference.isVisible = iconStylePreference.value == "twotone"
 
         expressiveShapesPreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
         shapeStylePreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
         iconStylePreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
         iconColorModePreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
         expressiveAnimationsPreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
         animationIntensityPreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
@@ -186,21 +194,21 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
         edgeToEdgePreference = requireNotNull(findPreference(KEY_EDGE_TO_EDGE))
         edgeToEdgePreference.isChecked = ShizukuSettings.isEdgeToEdgeEnabled()
         edgeToEdgePreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
         blurUiPreference = requireNotNull(findPreference(KEY_BLUR_UI))
         blurUiPreference.isChecked = ShizukuSettings.isBlurUiEnabled()
         blurUiPreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
         oneUiThemePreference = requireNotNull(findPreference(KEY_ONEUI_THEME))
         oneUiThemePreference.isChecked = ShizukuSettings.isOneUiThemeEnabled()
         oneUiThemePreference.setOnPreferenceChangeListener { _, _ ->
-            (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+            applyTheme(requiresRecreate = false)
             true
         }
 
@@ -216,7 +224,7 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
                     Locale.forLanguageTag(newValue)
                 }
                 LocaleDelegate.defaultLocale = locale
-                (activity as? af.shizuku.core.ui.AppActivity)?.recreateWithoutTransition()
+                applyTheme(requiresRecreate = true)
             }
             true
         }

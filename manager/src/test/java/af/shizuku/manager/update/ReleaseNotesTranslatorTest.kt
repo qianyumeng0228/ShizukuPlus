@@ -101,6 +101,39 @@ class ReleaseNotesTranslatorTest : FunSpec({
         dialogBody.shouldNotContain("版本 | 重点")
     }
 
+    test("translates r2247 through r2260 release summaries") {
+        val translated = ReleaseNotesTranslator.translate(
+            """
+            ### 🐛 Bug Fixes
+            - fix(#407): match APK asset by applicationId and enable dev channel releases in UpdateChecker (bbe3ab76)
+            - fix(ui): resolve bottom navigation bar overlap and modernize app search bar design (a49baf00)
+            - fix(ui): prevent bottom navigation bar overlap on Feature Hub and Settings preferences (b5ea9e35)
+            - fix(ui): resolve bottom navigation bar overlap on Activity Log list (ff7bb7d6)
+            - fix(settings): immediately persist Dhizuku Mode setting state on preference toggle (a8251831)
+            - fix(ui): eliminate theme-change screen flicker and redesign home server ok icon (56a3ea8f)
+            - fix(ui): resolve black screen on recreate, clean status icon colors, and add One UI large header + universal one-handed reachability (ef041e46)
+            - fix(ui): eliminate black-screen flash on theme/accent/icon/blur changes by using Compose recomposition instead of activity recreation (14c529a9)
+            - fix(ui): implement authentic Samsung OneUI one-handed mode (scale+pivot) for home and settings screens (c82127a6)
+            ### ✨ New Features
+            - feat(ui): enhance OneUI mode Settings with Samsung-authentic ExtraBold header and transparent app bar (1c17f3e9)
+            ### 🔧 Improvements & Refactors
+            - chore: remove unused AppCompatActivity import from SettingsActivity (648e4b10)
+            - docs: update README to remove stale banner, add recent fixes section; create CHANGELOG.md (f7d92aaa)
+            - fix(defaults): align Java-side defaults with XML preferences for correct first-run experience (d8665d7e)
+            - build: update api submodule for Android 16 NPE fix (#406) (69562ed3)
+            """.trimIndent()
+        )
+
+        translated shouldContain "按 applicationId 匹配 APK 资产"
+        translated shouldContain "底部导航栏重叠"
+        translated shouldContain "Dhizuku 模式"
+        translated shouldContain "Compose 重组"
+        translated shouldContain "Android 16 上的空指针异常"
+        translated.shouldNotContain("bottom navigation")
+        translated.shouldNotContain("black-screen")
+        translated.shouldNotContain("first-run experience")
+    }
+
     test("only translates for Chinese locales") {
         ReleaseNotesTranslator.translateIfNeeded("stock Shizuku", Locale.US) shouldBe "stock Shizuku"
         ReleaseNotesTranslator.translateIfNeeded("stock Shizuku", Locale.SIMPLIFIED_CHINESE) shouldBe

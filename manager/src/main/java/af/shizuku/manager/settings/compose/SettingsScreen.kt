@@ -1,22 +1,50 @@
 package af.shizuku.manager.settings.compose
 
-import android.content.Context
+import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,11 +52,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import af.shizuku.manager.R
+import af.shizuku.manager.ShizukuSettings
 import af.shizuku.manager.settings.SettingsSearchEngine
-import android.widget.FrameLayout
-import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,79 +78,132 @@ fun SettingsScreen(
         onSearchQueryChanged("")
     }
 
+    val isOneUi = ShizukuSettings.isOneUiThemeEnabled()
+    val isOneHanded = ShizukuSettings.isOneHandedModeEnabled()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    val oneHandedScale by animateFloatAsState(
+        targetValue = if (isOneHanded) 0.75f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+        label = "settingsOneHandedScale"
+    )
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    if (isSearchActive) {
-                        TextField(
-                            value = searchQuery,
-                            onValueChange = { 
-                                searchQuery = it
-                                onSearchQueryChanged(it)
-                            },
-                            placeholder = { Text(stringResource(R.string.settings_search_hint_compose)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .focusRequester(focusRequester),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
+            if (isOneUi && !isSearchActive) {
+                LargeTopAppBar(
+                    title = {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 28.sp,
+                                letterSpacing = 0.sp
                             ),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = { /* Handle search if needed */ })
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
-                        LaunchedEffect(Unit) {
-                            focusRequester.requestFocus()
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_back_24),
+                                contentDescription = stringResource(R.string.accessibility_back)
+                            )
                         }
-                    } else {
-                        Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        if (isSearchActive) {
-                            isSearchActive = false
-                            searchQuery = ""
-                            onSearchQueryChanged("")
-                        } else {
-                            onNavigateUp()
-                        }
-                    }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_back_24),
-                            contentDescription = stringResource(R.string.accessibility_back)
-                        )
-                    }
-                },
-                actions = {
-                    if (!isSearchActive) {
+                    },
+                    actions = {
                         IconButton(onClick = { isSearchActive = true }) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_search_24),
                                 contentDescription = stringResource(R.string.accessibility_search)
                             )
                         }
-                    } else if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { 
-                            searchQuery = ""
-                            onSearchQueryChanged("")
+                    },
+                    colors = TopAppBarDefaults.largeTopAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = if (ShizukuSettings.isBlurUiEnabled())
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
+                        else
+                            MaterialTheme.colorScheme.surfaceContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    scrollBehavior = scrollBehavior
+                )
+            } else {
+                TopAppBar(
+                    title = {
+                        if (isSearchActive) {
+                            TextField(
+                                value = searchQuery,
+                                onValueChange = {
+                                    searchQuery = it
+                                    onSearchQueryChanged(it)
+                                },
+                                placeholder = { Text(stringResource(R.string.settings_search_hint_compose)) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .focusRequester(focusRequester),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(onSearch = { })
+                            )
+                            LaunchedEffect(Unit) {
+                                focusRequester.requestFocus()
+                            }
+                        } else {
+                            Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            if (isSearchActive) {
+                                isSearchActive = false
+                                searchQuery = ""
+                                onSearchQueryChanged("")
+                            } else {
+                                onNavigateUp()
+                            }
                         }) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_close_24),
-                                contentDescription = stringResource(R.string.settings_search_clear)
+                                painter = painterResource(R.drawable.ic_back_24),
+                                contentDescription = stringResource(R.string.accessibility_back)
                             )
                         }
+                    },
+                    actions = {
+                        if (!isSearchActive) {
+                            IconButton(onClick = { isSearchActive = true }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_search_24),
+                                    contentDescription = stringResource(R.string.accessibility_search)
+                                )
+                            }
+                        } else if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = {
+                                searchQuery = ""
+                                onSearchQueryChanged("")
+                            }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_close_24),
+                                    contentDescription = stringResource(R.string.settings_search_clear)
+                                )
+                            }
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // Fragment Container for Preferences
             AndroidView(
                 factory = { context ->
                     FrameLayout(context).apply {
@@ -136,10 +217,17 @@ fun SettingsScreen(
                 },
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
+                    .graphicsLayer(
+                        scaleX = oneHandedScale,
+                        scaleY = oneHandedScale,
+                        transformOrigin = TransformOrigin(1f, 1f)
+                    )
+                    .padding(
+                        top = innerPadding.calculateTopPadding(),
+                        bottom = innerPadding.calculateBottomPadding()
+                    )
             )
 
-            // Search Overlay
             AnimatedVisibility(
                 visible = isSearchActive,
                 enter = fadeIn(),
@@ -149,7 +237,10 @@ fun SettingsScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
+                        .padding(
+                            top = innerPadding.calculateTopPadding(),
+                            bottom = innerPadding.calculateBottomPadding()
+                        )
                         .background(MaterialTheme.colorScheme.background)
                 ) {
                     if (searchQuery.isNotBlank()) {
@@ -192,10 +283,6 @@ fun SearchResultItem(
     item: SettingsSearchEngine.SettingItem,
     onClick: () -> Unit
 ) {
-    // Use Material3's clickable Card overload rather than Modifier.clickable: the latter reads
-    // LocalIndication, and on Android 16 / Compose Foundation 1.7+ that threw
-    // "clickable only supports IndicationNodeFactory instances provided to LocalIndication"
-    // when a legacy Indication was in scope, crashing settings search (#309 / SHIZUKUPLUS-72).
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),

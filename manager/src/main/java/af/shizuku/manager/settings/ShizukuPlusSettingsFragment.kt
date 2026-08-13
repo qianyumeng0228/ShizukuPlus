@@ -207,12 +207,12 @@ class ShizukuPlusSettingsFragment : BaseSettingsFragment() {
         }
         dhizukuPref.setOnPreferenceChangeListener { _, newValue ->
             if (newValue is Boolean) {
+                ShizukuSettings.setDhizukuModeEnabled(newValue)
                 maybePromptRestart(KEY_DHIZUKU_MODE, newValue) {
-                    ShizukuSettings.setDhizukuModeEnabled(newValue)
                     dhizukuPref.isChecked = newValue
                 }
             }
-            false
+            true
         }
 
         // Clear Device Owner button — only visible when app holds DO status

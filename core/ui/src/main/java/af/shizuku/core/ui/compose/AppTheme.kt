@@ -91,10 +91,11 @@ private fun androidColorScheme(context: Context, darkTheme: Boolean): ColorSchem
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     isBlackNightTheme: Boolean = false,
+    themeVersion: Int = 0,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    var colorScheme = remember(context, darkTheme) { androidColorScheme(context, darkTheme) }
+    var colorScheme = remember(context, darkTheme, themeVersion) { androidColorScheme(context, darkTheme) }
 
     // Belt-and-suspenders: ThemeOverlay.Black (applied via onApplyUserThemeResource) already
     // forces colorSurface/android:colorBackground to black, so this should be redundant with the

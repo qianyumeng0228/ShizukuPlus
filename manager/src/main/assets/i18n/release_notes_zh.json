@@ -90,6 +90,62 @@
     {
       "source": "Fix Plus feature wiring, settings structure, theming, and edge-to-edge insets",
       "target": "修复 Plus 功能联动、设置结构、主题和 edge-to-edge 边距处理"
+    },
+    {
+      "source": "fix(#407): match APK asset by applicationId and enable dev channel releases in UpdateChecker",
+      "target": "修复(#407)：按 applicationId 匹配 APK 资产，并在 UpdateChecker 中启用开发通道发布"
+    },
+    {
+      "source": "fix(ui): resolve bottom navigation bar overlap and modernize app search bar design",
+      "target": "修复(UI)：解决底部导航栏重叠问题，并现代化应用搜索栏设计"
+    },
+    {
+      "source": "fix(ui): prevent bottom navigation bar overlap on Feature Hub and Settings preferences",
+      "target": "修复(UI)：防止功能中心和设置偏好项与底部导航栏重叠"
+    },
+    {
+      "source": "fix(ui): resolve bottom navigation bar overlap on Activity Log list",
+      "target": "修复(UI)：解决活动日志列表与底部导航栏重叠的问题"
+    },
+    {
+      "source": "fix(settings): immediately persist Dhizuku Mode setting state on preference toggle",
+      "target": "修复(设置)：切换 Dhizuku 模式偏好项时立即保存状态"
+    },
+    {
+      "source": "fix(ui): eliminate theme-change screen flicker and redesign home server ok icon",
+      "target": "修复(UI)：消除切换主题时的屏幕闪烁，并重新设计主页服务正常图标"
+    },
+    {
+      "source": "fix(ui): resolve black screen on recreate, clean status icon colors, and add One UI large header + universal one-handed reachability",
+      "target": "修复(UI)：解决界面重建时黑屏的问题，清理状态图标颜色，并加入 One UI 大标题和通用单手可达布局"
+    },
+    {
+      "source": "fix(ui): eliminate black-screen flash on theme/accent/icon/blur changes by using Compose recomposition instead of activity recreation",
+      "target": "修复(UI)：改用 Compose 重组处理主题、强调色、图标和模糊效果变化，避免 Activity 重建造成黑屏闪烁"
+    },
+    {
+      "source": "fix(ui): implement authentic Samsung OneUI one-handed mode (scale+pivot) for home and settings screens",
+      "target": "修复(UI)：为主页和设置页实现更贴近 Samsung OneUI 的单手模式（缩放 + 锚点）"
+    },
+    {
+      "source": "feat(ui): enhance OneUI mode Settings with Samsung-authentic ExtraBold header and transparent app bar",
+      "target": "新功能(UI)：增强 OneUI 模式下的设置页，加入更贴近 Samsung 风格的粗体大标题和透明应用栏"
+    },
+    {
+      "source": "chore: remove unused AppCompatActivity import from SettingsActivity",
+      "target": "维护：移除 SettingsActivity 中未使用的 AppCompatActivity 导入"
+    },
+    {
+      "source": "docs: update README to remove stale banner, add recent fixes section; create CHANGELOG.md",
+      "target": "文档：更新 README，移除过期横幅，新增近期修复说明，并创建 CHANGELOG.md"
+    },
+    {
+      "source": "fix(defaults): align Java-side defaults with XML preferences for correct first-run experience",
+      "target": "修复(默认值)：使 Java 侧默认值与 XML 偏好设置保持一致，修正首次运行体验"
+    },
+    {
+      "source": "build: update api submodule for Android 16 NPE fix (#406)",
+      "target": "构建：更新 api 子模块，修复 Android 16 上的空指针异常 (#406)"
     }
   ],
   "phraseRules": [
@@ -162,7 +218,38 @@
     { "source": "shipped the Drop-In build under the Plus APK's filename", "target": "把 Drop-In 版本打包到了 Plus APK 的文件名下" },
     { "source": "anyone who installed \"Shizuku+\" in that window actually got moe.shizuku.privileged.api", "target": "在此期间安装“Shizuku+”的用户实际得到的是 moe.shizuku.privileged.api" },
     { "source": "which fails to install or update alongside stock Shizuku", "target": "因此无法与原版 Shizuku 并存安装或更新" },
-    { "source": "Fixed by selecting release assets by verified applicationId instead of directory order.", "target": "现已改为按校验后的 applicationId 选择发布资产，而不是依赖目录顺序。" }
+    { "source": "Fixed by selecting release assets by verified applicationId instead of directory order.", "target": "现已改为按校验后的 applicationId 选择发布资产，而不是依赖目录顺序。" },
+    { "source": "match APK asset by applicationId", "target": "按 applicationId 匹配 APK 资产" },
+    { "source": "enable dev channel releases in UpdateChecker", "target": "在 UpdateChecker 中启用开发通道发布" },
+    { "source": "bottom navigation bar overlap", "target": "底部导航栏重叠" },
+    { "source": "modernize app search bar design", "target": "现代化应用搜索栏设计" },
+    { "source": "Feature Hub", "target": "功能中心" },
+    { "source": "Settings preferences", "target": "设置偏好项" },
+    { "source": "Activity Log list", "target": "活动日志列表" },
+    { "source": "Dhizuku Mode", "target": "Dhizuku 模式" },
+    { "source": "preference toggle", "target": "偏好项开关" },
+    { "source": "theme-change screen flicker", "target": "切换主题时的屏幕闪烁" },
+    { "source": "home server ok icon", "target": "主页服务正常图标" },
+    { "source": "black screen on recreate", "target": "界面重建时黑屏" },
+    { "source": "status icon colors", "target": "状态图标颜色" },
+    { "source": "One UI large header", "target": "One UI 大标题" },
+    { "source": "universal one-handed reachability", "target": "通用单手可达布局" },
+    { "source": "black-screen flash", "target": "黑屏闪烁" },
+    { "source": "Compose recomposition", "target": "Compose 重组" },
+    { "source": "activity recreation", "target": "Activity 重建" },
+    { "source": "Samsung OneUI one-handed mode", "target": "Samsung OneUI 单手模式" },
+    { "source": "scale+pivot", "target": "缩放 + 锚点" },
+    { "source": "home and settings screens", "target": "主页和设置页" },
+    { "source": "OneUI mode Settings", "target": "OneUI 模式下的设置页" },
+    { "source": "Samsung-authentic ExtraBold header", "target": "更贴近 Samsung 风格的粗体大标题" },
+    { "source": "transparent app bar", "target": "透明应用栏" },
+    { "source": "unused AppCompatActivity import", "target": "未使用的 AppCompatActivity 导入" },
+    { "source": "stale banner", "target": "过期横幅" },
+    { "source": "recent fixes section", "target": "近期修复说明" },
+    { "source": "Java-side defaults", "target": "Java 侧默认值" },
+    { "source": "XML preferences", "target": "XML 偏好设置" },
+    { "source": "first-run experience", "target": "首次运行体验" },
+    { "source": "Android 16 NPE fix", "target": "Android 16 空指针异常修复" }
   ],
   "protectedTerms": [
     "Shizuku",
@@ -187,6 +274,12 @@
     "isLegacy",
     "M3",
     "One UI",
+    "OneUI",
+    "Samsung",
+    "Compose",
+    "Activity",
+    "Android 16",
+    "NPE",
     "Edge-to-Edge",
     "Frosted Glass",
     "pre-push guard",

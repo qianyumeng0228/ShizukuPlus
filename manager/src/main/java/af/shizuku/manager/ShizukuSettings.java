@@ -630,7 +630,7 @@ public class ShizukuSettings {
 
     public static boolean isCustomApiEnabled() {
         SharedPreferences p = getPreferences();
-        return p != null && p.getBoolean(Keys.KEY_CUSTOM_API_ENABLED, true);
+        return p == null || p.getBoolean(Keys.KEY_CUSTOM_API_ENABLED, true);
     }
 
     public static void setCustomApiEnabled(boolean enable) {
@@ -837,7 +837,7 @@ public class ShizukuSettings {
 
     public static boolean isSuBridgeEnabled() {
         SharedPreferences p = getPreferences();
-        return p != null && p.getBoolean(Keys.KEY_SU_BRIDGE_ENABLED, true);
+        return p != null && p.getBoolean(Keys.KEY_SU_BRIDGE_ENABLED, false);
     }
 
     public static String getCustomSuPath() {
@@ -877,7 +877,7 @@ public class ShizukuSettings {
 
     public static boolean showStartAdbHome() {
         SharedPreferences p = getPreferences();
-        return p != null && p.getBoolean(Keys.KEY_SHOW_START_ADB_HOME, false);
+        return p == null || p.getBoolean(Keys.KEY_SHOW_START_ADB_HOME, true);
     }
 
     @Nullable
@@ -1071,7 +1071,7 @@ public class ShizukuSettings {
 
     public static boolean isCompanionFallbackEnabled() {
         SharedPreferences p = getPreferences();
-        return p != null && p.getBoolean(Keys.KEY_COMPANION_FALLBACK, false);
+        return p == null || p.getBoolean(Keys.KEY_COMPANION_FALLBACK, true);
     }
 
     public static void setCompanionFallbackEnabled(boolean enable) {

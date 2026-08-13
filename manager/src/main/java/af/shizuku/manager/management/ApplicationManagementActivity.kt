@@ -148,7 +148,8 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
                 androidx.core.view.WindowInsetsCompat.Type.systemBars() or
                 androidx.core.view.WindowInsetsCompat.Type.displayCutout()
             )
-            v.setPadding(bars.left, v.paddingTop, bars.right, bars.bottom)
+            val extraBottomPadding = (72 * resources.displayMetrics.density).toInt()
+            v.setPadding(bars.left, v.paddingTop, bars.right, bars.bottom + extraBottomPadding)
             insets
         }
 

@@ -55,6 +55,10 @@ abstract class AppActivity : MaterialActivity() {
         // leaves the window black until the user navigates away. Suppressing it here on the
         // new window ensures a clean, animation-free replacement.
         if (suppressTransitionOnCreate) {
+            window.enterTransition = null
+            window.exitTransition = null
+            window.reenterTransition = null
+            window.returnTransition = null
             window.setWindowAnimations(0)
             @Suppress("DEPRECATION")
             overridePendingTransition(0, 0)
@@ -106,29 +110,24 @@ abstract class AppActivity : MaterialActivity() {
             // guarantees a full-screen cover regardless of when layout completes.
             drawable.setBounds(0, 0, snapshot.width, snapshot.height)
             decorView.overlay.add(drawable)
-            decorView.post {
-                // ObjectAnimator instead of View.animate(): we're fading a Drawable, not a View.
-                ObjectAnimator.ofInt(drawable, "alpha", 255, 0).apply {
-                    duration = 220L
-                    interpolator = LinearInterpolator()
-                    addListener(object : AnimatorListenerAdapter() {
-                        override fun onAnimationEnd(animation: android.animation.Animator) {
-                            decorView.overlay.remove(drawable)
-                            // Restore the actual theme window background. onCreate() replaced it
-                            // with the snapshot bitmap to mask the flash; now the real content is
-                            // visible we can put the theme drawable back. Must happen before
-                            // snapshot.recycle() or the stale BitmapDrawable would hold a ref
-                            // to the recycled bitmap.
-                            val ta = this@AppActivity.obtainStyledAttributes(
-                                intArrayOf(android.R.attr.windowBackground)
-                            )
-                            window.setBackgroundDrawable(ta.getDrawable(0))
-                            ta.recycle()
-                            if (!snapshot.isRecycled) snapshot.recycle()
-                        }
-                    })
-                    start()
-                }
+            // ObjectAnimator instead of View.animate(): we're fading a Drawable, not a View.
+            // Start animator immediately so it is synchronized with the first frame rather than
+            // waiting for a post() looper cycle which causes a 1-frame black/white screen flicker.
+            ObjectAnimator.ofInt(drawable, "alpha", 255, 0).apply {
+                duration = 220L
+                interpolator = LinearInterpolator()
+                addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: android.animation.Animator) {
+                        decorView.overlay.remove(drawable)
+                        val ta = this@AppActivity.obtainStyledAttributes(
+                            intArrayOf(android.R.attr.windowBackground)
+                        )
+                        window.setBackgroundDrawable(ta.getDrawable(0))
+                        ta.recycle()
+                        if (!snapshot.isRecycled) snapshot.recycle()
+                    }
+                })
+                start()
             }
         } catch (_: Throwable) {
             decorView.overlay.remove(drawable)

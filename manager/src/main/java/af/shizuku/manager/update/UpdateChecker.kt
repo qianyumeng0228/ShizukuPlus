@@ -1,35 +1,34 @@
 package af.shizuku.manager.update
 
 import android.util.Xml
-import timber.log.Timber
-import io.sentry.Sentry
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import java.io.IOException
-import java.net.ConnectException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import javax.net.ssl.SSLException
-import kotlinx.coroutines.withContext
 import af.shizuku.manager.BuildConfig
 import af.shizuku.manager.ShizukuSettings
-import org.json.JSONArray
-import org.json.JSONObject
-import org.xmlpull.v1.XmlPullParser
+import io.sentry.Sentry
+import java.io.IOException
+import java.net.ConnectException
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URL
+import java.net.UnknownHostException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import javax.net.ssl.SSLException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
+import org.xmlpull.v1.XmlPullParser
+import timber.log.Timber
 
 object UpdateChecker {
 
     private const val TAG = "UpdateChecker"
     private const val RELEASES_URL = ReleaseConfig.API_RELEASES_URL
     private const val LATEST_URL = "$RELEASES_URL/latest"
-    // Fallback: GitHub's Atom feed is served from github.com CDN — different IP range
-    // than api.github.com, so routing issues specific to that host don't affect it.
+    // GitHub's Atom feed is served from github.com CDN, a different IP range than api.github.com.
     private const val ATOM_URL = ReleaseConfig.ATOM_URL
     private const val CONNECT_TIMEOUT_MS = 5_000
     private const val READ_TIMEOUT_MS = 8_000
@@ -42,7 +41,7 @@ object UpdateChecker {
         val downloadUrl: String,
         val publishedAt: String,
         val isPrerelease: Boolean,
-        // True when only the Atom fallback succeeded — no direct APK URL available.
+        // True when only the Atom fallback succeeded; no direct APK URL is available.
         val requiresManualDownload: Boolean = false,
         val releaseNotesUrl: String = ReleaseConfig.releaseTagUrl("v$versionName")
     )
@@ -59,14 +58,7 @@ object UpdateChecker {
     }
 
     /**
-     * Check for an update, with retry + Atom feed fallback.
-     *
-     * Strategy:
-     *   1. Try GitHub API (up to 2 attempts, 2 s apart)
-     *   2. If both fail with a network error, fall back to the GitHub Atom feed
-     *      (can detect an update exists but can't supply a download URL — user is
-     *      directed to GitHub Releases manually)
-     *   3. If all three fail → NetworkError
+     * Check for an update, with retry and Atom feed fallback.
      */
     suspend fun checkForUpdate(channel: String = "stable"): CheckResult = withContext(Dispatchers.IO) {
         val transaction = Sentry.startTransaction("UpdateCheck", "check_for_update")
@@ -111,8 +103,8 @@ object UpdateChecker {
     }
 
     private fun checkViaApi(channel: String): CheckResult {
-        val json: JSONObject = if (channel == "dev") {
-            val arr = fetchJson("$RELEASES_URL?per_page=1") as? JSONArray
+        val json: JSONObject = if (channel == "dev" || channel == "beta") {
+            val arr = fetchJson("$RELEASES_URL?per_page=5") as? JSONArray
             arr?.optJSONObject(0) ?: return CheckResult.UpToDate
         } else {
             fetchJson(LATEST_URL) as? JSONObject ?: return CheckResult.UpToDate
@@ -120,8 +112,9 @@ object UpdateChecker {
 
         val tagName = json.getString("tag_name")
         val versionName = tagName.removePrefix("v")
-        val isPrerelease = json.getBoolean("prerelease")
-        val publishedAt = json.getString("published_at")
+        val isPrerelease = json.optBoolean("prerelease", false)
+        val releaseNotes = json.optString("body", "")
+        val publishedAt = json.optString("published_at", "")
         val versionCode = parseVersionCode(versionName)
         val currentVersionCode = parseVersionCode(BuildConfig.VERSION_NAME)
 
@@ -140,7 +133,7 @@ object UpdateChecker {
         val upstreamTagName = ReleaseConfig.upstreamTagFor(tagName)
         val releaseNotesInfo = fetchTranslatedReleaseNotes(
             upstreamTagName,
-            json.optString("body", ""),
+            releaseNotes,
             ReleaseConfig.releaseTagUrl(tagName)
         )
 
@@ -160,11 +153,7 @@ object UpdateChecker {
     }
 
     /**
-     * Fetches the release notes body for a specific tag (e.g. "v13.6.0.r2162") — used by the
-     * in-app changelog dialog to show what changed in the version the user just updated to,
-     * as opposed to [checkForUpdate]'s "latest" which may have moved on by the time they open
-     * the app. Returns null on any failure (offline, tag not found, etc.) so callers can fall
-     * back to a generic message instead of failing the whole dialog.
+     * Fetches release notes for a specific tag so the in-app changelog shows the installed version.
      */
     suspend fun fetchReleaseNotesForTag(tag: String): String? = withContext(Dispatchers.IO) {
         try {
@@ -190,8 +179,6 @@ object UpdateChecker {
 
     /**
      * Reads GitHub's public Atom feed as a last-resort fallback.
-     * Served from github.com CDN — a different network path than api.github.com.
-     * Can tell us whether an update exists but cannot provide a direct APK URL.
      */
     private fun checkViaAtomFeed(): UpdateInfo? {
         val connection = (URL(ATOM_URL).openConnection() as HttpURLConnection).apply {
@@ -230,7 +217,7 @@ object UpdateChecker {
                                 releaseNotesUrl = ReleaseConfig.upstreamReleaseTagUrl(tagName)
                             )
                         }
-                        return null // First release entry checked — already up to date
+                        return null
                     }
                 }
                 eventType = parser.next()
@@ -270,6 +257,15 @@ object UpdateChecker {
         fallbackNotes: String?,
         fallbackUrl: String
     ): ReleaseNotesInfo {
+        if (ReleaseNotesTranslator.shouldTranslate(ShizukuSettings.getLocale())) {
+            fallbackNotes?.takeIf { it.isNotBlank() }?.let {
+                return ReleaseNotesInfo(
+                    body = translateReleaseNotes(it),
+                    sourceUrl = fallbackUrl
+                )
+            }
+        }
+
         runCatching { fetchUpstreamReleaseNotesForTag(tag) }.getOrNull()?.let {
             return ReleaseNotesInfo(
                 body = translateReleaseNotes(it.body),
@@ -322,7 +318,7 @@ object UpdateChecker {
         }
     }
 
-    /** Extracts the build number from "13.6.0.r1488-shizukuplus" → 1488 */
+    /** Extracts the build number from "13.6.0.r1488-shizukuplus" -> 1488 */
     fun parseVersionCode(versionName: String): Int = try {
         """\.\br(\d+)\b""".toRegex().find(versionName)?.groupValues?.get(1)?.toIntOrNull() ?: 0
     } catch (e: Exception) {

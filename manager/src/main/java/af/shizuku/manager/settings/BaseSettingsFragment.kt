@@ -157,11 +157,12 @@ abstract class BaseSettingsFragment : PreferenceFragmentCompat() {
 
         ViewCompat.setOnApplyWindowInsetsListener(recyclerView) { _, insets ->
             val systemBarsInsets = insets.getInsets(Type.systemBars() or Type.displayCutout())
+            val navBarClearancePx = (72 * context.resources.displayMetrics.density).toInt()
             recyclerView.setPadding(
                 cardMarginPx + contentPaddingPx + systemBarsInsets.left,
                 recyclerView.paddingTop,
                 cardMarginPx + contentPaddingPx + systemBarsInsets.right,
-                systemBarsInsets.bottom
+                systemBarsInsets.bottom + navBarClearancePx
             )
             insets
         }

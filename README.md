@@ -2,7 +2,7 @@
 
 # Shizuku+
 
-[Latest Version is Semi-Functional... fixes in progress]
+The advanced privileged-process manager for Android.
 
 An enhanced version of [Shizuku](https://github.com/RikkaApps/Shizuku) built on top of [thedjchi/Shizuku](https://github.com/thedjchi/Shizuku), with quality-of-life improvements, backported optimizations, and exclusive Plus APIs.
 
@@ -17,6 +17,22 @@ Shizuku lets normal apps use system-level APIs directly via a privileged process
 ## ⬇️ Download
 
 Get the latest release from [GitHub Releases](https://github.com/thejaustin/ShizukuPlus/releases).
+
+## 🐛 Recent Fixes
+
+### Critical Server Fixes
+- **`attachApplication` binder regression** (commits `8fbe5e47`, `c702a5c`): Fixed a dead-code bug in `Service.onTransact()` where `attachApplication` (binder code 17) was in an unreachable `else` block. This caused ALL API v13+ clients (Morphe, InstallerX, Droid-ify, ObtainX, Obtainium, Termux rish, MT Manager) to fail with `PackageInstaller.asBinder() NullPointerException` or `Not an attached client`.
+- **Shell consent persistence** (commit `9f2c01e8`): Shell clients (rish) were always re-prompted even after `Allow always`. Fixed by propagating `callingUid` through the consent intent chain via `Os.getuid()` in `ShizukuShellLoader`.
+- **SU bridge dex redeploy** (commit `252d6315`): SU bridge self-test was writing to an already-open file descriptor; fixed by clearing the file before rewriting.
+- **Live activity notification respecting toggle** (commit `252d6315`): `ActivityLogSettingsImpl.showNotification()` didn't check the live-activity setting before posting, so disabling the toggle didn't prevent re-notification on the next logged action.
+
+### Manager App / UI Fixes
+- **Theme change black screen eliminated** (commit `14c529a9`): All appearance settings (accent, icon style, blur, OneUI theme, etc.) now update the UI via Compose recomposition instead of `Activity.recreate()`, eliminating 1-2 second black screens.
+- **Authentic Samsung OneUI one-handed mode** (commit `c82127a6`): One-handed mode now scales content to 75% with bottom-right pivot (matching Samsung's actual behavior) instead of the broken top-padding approach.
+- **OneUI Settings header typography** (commit `1c17f3e9`): Settings LargeTopAppBar uses ExtraBold (W800) title at 28sp matching Samsung OneUI 6/7.
+- **Bottom navigation bar overlap** (commits `b5ea9e35`, `ff7bb7d6`, `a49baf00`): Fixed Feature Hub, Settings preferences, Activity Log list, and App search bar all being obscured by the floating bottom nav bar.
+- **Dhizuku Mode setting persistence** (commit `a8251831`): Toggle state now persists immediately.
+- **Update channel respects Dev/Beta** (commit `bbe3ab76`): UpdateChecker now fetches pre-releases when Dev/Beta channel is selected and matches the correct APK asset (Plus vs Drop-In).
 
 ## ✨ Shizuku+ Core Features
 

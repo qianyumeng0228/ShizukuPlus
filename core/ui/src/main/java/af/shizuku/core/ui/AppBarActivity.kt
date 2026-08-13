@@ -33,6 +33,11 @@ abstract class AppBarActivity : AppActivity() {
             window.exitTransition = MaterialSharedAxis(axis, false)
             window.reenterTransition = MaterialSharedAxis(axis, false)
             window.returnTransition = MaterialSharedAxis(axis, true)
+        } else {
+            window.enterTransition = null
+            window.exitTransition = null
+            window.reenterTransition = null
+            window.returnTransition = null
         }
 
         super.onCreate(savedInstanceState)

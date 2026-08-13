@@ -153,7 +153,8 @@ class ServerStatusViewHolder(private val binding: HomeServerStatusBinding, root:
         logChip.setTextColor(textColor)
         diagnosticsChip.setTextColor(textColor)
 
-        af.shizuku.manager.utils.IconStyleHelper.applyToStatusCardIcon(iconView, pillColor = textColor, tintColor = bgColor)
+        // Clean, harmonized status icon tint (pill background matches container, icon uses on-container text tint)
+        af.shizuku.manager.utils.IconStyleHelper.applyToStatusCardIcon(iconView, pillColor = bgColor, tintColor = textColor)
 
         val isRoot = status.uid == 0
         val apiVersion = status.apiVersion
