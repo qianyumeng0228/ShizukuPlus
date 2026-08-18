@@ -134,6 +134,47 @@ class ReleaseNotesTranslatorTest : FunSpec({
         translated.shouldNotContain("first-run experience")
     }
 
+    test("translates r2284 release notes without english leftovers") {
+        val translated = ReleaseNotesTranslator.translate(
+            """
+            ## Changes since v13.6.0.r2282
+
+            ### 🐛 Bug Fixes
+            - fix(security): re-implement always-allow persistence for shell/rish clients safely (#420, #416) (32382e89)
+            - fix(server): stop dead branch in checkCallerPermission from masking allowed/denied state; move plus badge onto hexagon icon; bump api submodule (0d6f357a)
+
+            _2 distinct GitHub issue(s) referenced in this release._
+            """.trimIndent()
+        )
+
+        translated shouldContain "## 相比 v13.6.0.r2282 的变化"
+        translated shouldContain "修复(安全)：安全地重新实现 shell/rish 客户端的 always-allow 持久化"
+        translated shouldContain "修复(服务端)：停止让调用者权限判断中的死分支遮蔽允许/拒绝状态"
+        translated shouldContain "本版本关联了 2 个 GitHub issue。"
+        translated.shouldNotContain("always-allow persistence")
+        translated.shouldNotContain("dead branch")
+        translated.shouldNotContain("checkCallerPermission")
+    }
+
+    test("cleans mixed english terms from localized release body used by update dialog") {
+        val translated = ReleaseNotesTranslator.translate(
+            """
+            ### 安全与稳定性
+            - 修复 checkCallerPermission 的允许/拒绝判断，避免状态被错误遮蔽。
+            ### 界面与汉化
+            - 补齐更新公告与 release note 的中文翻译。
+            - 更新发布通道配置，继续指向本项目的 GitHub release。
+            """.trimIndent()
+        )
+
+        translated shouldContain "修复调用者权限判断的允许/拒绝判断"
+        translated shouldContain "补齐更新公告与发行说明的中文翻译"
+        translated shouldContain "GitHub 发布页"
+        translated.shouldNotContain("checkCallerPermission")
+        translated.shouldNotContain("release note")
+        translated.shouldNotContain("GitHub release")
+    }
+
     test("only translates for Chinese locales") {
         ReleaseNotesTranslator.translateIfNeeded("stock Shizuku", Locale.US) shouldBe "stock Shizuku"
         ReleaseNotesTranslator.translateIfNeeded("stock Shizuku", Locale.SIMPLIFIED_CHINESE) shouldBe

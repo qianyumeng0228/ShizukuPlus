@@ -65,6 +65,14 @@ object ReleaseNotesTranslator {
                 "修复(#400, #402)：实时活动通知遵循开关设置，并修复只读 dex 环境下 SU bridge 重新部署的问题"
             ),
             Rule(
+                "fix(security): re-implement always-allow persistence for shell/rish clients safely (#420, #416)",
+                "修复(安全)：安全地重新实现 shell/rish 客户端的 always-allow 持久化 (#420, #416)"
+            ),
+            Rule(
+                "fix(server): stop dead branch in checkCallerPermission from masking allowed/denied state; move plus badge onto hexagon icon; bump api submodule",
+                "修复(服务端)：停止让调用者权限判断中的死分支遮蔽允许/拒绝状态；将 Plus 徽标移到六边形图标上；更新 api 子模块"
+            ),
+            Rule(
                 "chore: add settings XML string reference check to pre-push guard",
                 "维护：为 pre-push guard 增加设置 XML 字符串引用检查"
             ),
@@ -152,6 +160,8 @@ object ReleaseNotesTranslator {
             Rule("Crash & Stability Fixes", "崩溃与稳定性修复"),
             Rule("Improvements & Refactors", "改进与重构"),
             Rule("Recent Releases", "近期版本"),
+            Rule("GitHub release", "GitHub 发布页"),
+            Rule("release note", "发行说明"),
             Rule("stock Shizuku", "原版 Shizuku"),
             Rule("Stock Shizuku", "原版 Shizuku"),
             Rule("Drop-In build", "Drop-In 版本"),
@@ -160,6 +170,12 @@ object ReleaseNotesTranslator {
             Rule("bindApplication retry", "bindApplication 重试"),
             Rule("Watchdog scope", "Watchdog 作用范围"),
             Rule("bump api submodule", "更新 api 子模块"),
+            Rule("always-allow persistence", "always-allow 持久化"),
+            Rule("dead branch", "死分支"),
+            Rule("checkCallerPermission", "调用者权限判断"),
+            Rule("masking allowed/denied state", "遮蔽允许/拒绝状态"),
+            Rule("plus badge", "Plus 徽标"),
+            Rule("hexagon icon", "六边形图标"),
             Rule("remove legacy case 14 from isLegacy switch", "移除 isLegacy 判断中的旧版 case 14"),
             Rule("shipped the Drop-In build under the Plus APK's filename", "把 Drop-In 版本打包到了 Plus APK 的文件名下"),
             Rule(
@@ -291,7 +307,7 @@ object ReleaseNotesTranslator {
         result = replaceSummaries(result)
         result = replacePhrases(result)
         result = applyCommitTypePrefixes(result)
-        return result.replace("  ", " ").trimEnd()
+        return cleanupTranslatedText(result)
     }
 
     private fun normalizeText(value: String): String =
@@ -355,7 +371,7 @@ object ReleaseNotesTranslator {
             return it.target + protectedTail
         }
 
-        return replacePhrases(applyCommitTypePrefixes(replaceSummaries(body))).trim() + protectedTail
+        return cleanupTranslatedText(replacePhrases(applyCommitTypePrefixes(replaceSummaries(body)))).trim() + protectedTail
     }
 
     private fun replaceSummaries(text: String): String {
@@ -383,6 +399,11 @@ object ReleaseNotesTranslator {
         return result
     }
 
+    private fun cleanupTranslatedText(text: String): String =
+        text.replace(Regex("""[ \t]{2,}"""), " ")
+            .replace(Regex("""(?<=[\u4e00-\u9fff])\s+(?=[\u4e00-\u9fff])"""), "")
+            .trimEnd()
+
     private fun translateCommitScope(scope: String): String = when (scope.lowercase(Locale.US)) {
         "ui" -> "UI"
         "settings" -> "设置"
@@ -404,7 +425,8 @@ object ReleaseNotesTranslator {
 
     private fun loadLocalSourceLibrary(): LanguageLibrary? =
         runCatching {
-            val file = generateSequence(File(System.getProperty("user.dir")).absoluteFile) { it.parentFile }
+            val baseDir = File(System.getProperty("user.dir") ?: return@runCatching null).absoluteFile
+            val file = generateSequence(baseDir) { it.parentFile }
                 .flatMap { dir ->
                     sequenceOf(
                         File(dir, "manager/src/main/assets/$ZH_LIBRARY_ASSET"),

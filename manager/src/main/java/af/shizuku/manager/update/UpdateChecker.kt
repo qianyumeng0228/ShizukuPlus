@@ -258,12 +258,19 @@ object UpdateChecker {
         fallbackUrl: String
     ): ReleaseNotesInfo {
         if (ReleaseNotesTranslator.shouldTranslate(ShizukuSettings.getLocale())) {
-            fallbackNotes?.takeIf { it.isNotBlank() }?.let {
+            runCatching { fetchLocalizedReleaseNotesForTag(tag) }.getOrNull()?.let {
                 return ReleaseNotesInfo(
-                    body = translateReleaseNotes(it),
-                    sourceUrl = fallbackUrl
+                    body = translateReleaseNotes(it.body),
+                    sourceUrl = it.sourceUrl
                 )
             }
+        }
+
+        fallbackNotes?.takeIf { it.isNotBlank() }?.let {
+            return ReleaseNotesInfo(
+                body = translateReleaseNotes(it),
+                sourceUrl = fallbackUrl
+            )
         }
 
         runCatching { fetchUpstreamReleaseNotesForTag(tag) }.getOrNull()?.let {
@@ -286,8 +293,17 @@ object UpdateChecker {
         )
     }
 
+    private fun fetchLocalizedReleaseNotesForTag(tag: String): ReleaseNotesInfo? {
+        val localizedTag = ReleaseConfig.localizedTagFor(tag)
+        val json = fetchJson("${ReleaseConfig.API_RELEASES_URL}/tags/$localizedTag") as? JSONObject
+            ?: return null
+        val body = json.optString("body", "").takeIf { it.isNotBlank() } ?: return null
+        val sourceUrl = json.optString("html_url", ReleaseConfig.releaseTagUrl(localizedTag))
+        return ReleaseNotesInfo(body, sourceUrl)
+    }
+
     private fun translateReleaseNotes(notes: String): String =
-        ReleaseNotesTranslator.translateIfNeeded(notes, ShizukuSettings.getLocale()).trim()
+        ReleaseNotesTranslator.translate(notes).trim()
 
     private fun fetchUpstreamReleaseNotesForTag(tag: String): ReleaseNotesInfo? {
         val json = fetchJson("${ReleaseConfig.UPSTREAM_API_RELEASES_URL}/tags/$tag") as? JSONObject
