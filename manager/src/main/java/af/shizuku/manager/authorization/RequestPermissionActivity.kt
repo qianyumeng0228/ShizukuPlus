@@ -53,8 +53,14 @@ class RequestPermissionActivity : AppActivity() {
         val uid = intent.getIntExtra("uid", -1)
         val pid = intent.getIntExtra("pid", -1)
         val requestCode = intent.getIntExtra("requestCode", -1)
+        // ai is null when the server couldn't resolve the caller via PackageManager (device/profile
+        // PM-lookup gap, #391 follow-up) - previously that silently finish()'d here with no dispatch,
+        // leaving the caller's requestPermission() call hanging forever. uid/pid/requestCode are
+        // always present (the server only starts this activity with them set), so fall back to the
+        // callingPackage label instead of dropping the request.
         val ai = androidx.core.content.IntentCompat.getParcelableExtra(intent, "applicationInfo", ApplicationInfo::class.java)
-        if (uid == -1 || pid == -1 || ai == null) {
+        val callingPackage = intent.getStringExtra("callingPackage")
+        if (uid == -1 || pid == -1) {
             finish()
             return
         }
@@ -99,11 +105,11 @@ class RequestPermissionActivity : AppActivity() {
             }
 
             if (isFinishing || isDestroyed) return@launch
-            showPermissionDialog(uid, pid, requestCode, ai, hasSelfPermission)
+            showPermissionDialog(uid, pid, requestCode, ai, callingPackage, hasSelfPermission)
         }
     }
 
-    private fun showPermissionDialog(uid: Int, pid: Int, requestCode: Int, ai: ApplicationInfo, hasSelfPermission: Boolean) {
+    private fun showPermissionDialog(uid: Int, pid: Int, requestCode: Int, ai: ApplicationInfo?, callingPackage: String?, hasSelfPermission: Boolean) {
         if (!hasSelfPermission) {
             // Can't grant — dispatch denial and show informational dialog
             lifecycleScope.launch(Dispatchers.IO) {
@@ -113,11 +119,13 @@ class RequestPermissionActivity : AppActivity() {
             return
         }
 
-        val label = try {
-            ai.loadLabel(packageManager)
-        } catch (e: Exception) {
-            ai.packageName
-        }
+        val label = ai?.let {
+            try {
+                it.loadLabel(packageManager)
+            } catch (e: Exception) {
+                it.packageName
+            }
+        } ?: callingPackage ?: "Shell"
 
         val binding = ConfirmationDialogBinding.inflate(layoutInflater).apply {
             button1.setOnClickListener {

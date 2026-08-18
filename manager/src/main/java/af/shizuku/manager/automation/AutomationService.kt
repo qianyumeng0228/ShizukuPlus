@@ -158,7 +158,12 @@ class AutomationService : Service() {
                     // Requires UsageStats permission. Alternatively, using Shizuku could be more robust.
                     // For now, we will poll usage stats if available.
                     val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as? android.app.usage.UsageStatsManager
-                        ?: continue
+                    if (usageStatsManager == null) {
+                        // continue alone would skip the delay(2000) below and busy-spin this loop
+                        // indefinitely on Dispatchers.IO if the system service is ever unavailable.
+                        delay(2000)
+                        continue
+                    }
                     val endTime = System.currentTimeMillis()
                     val startTime = endTime - 10000 // 10 seconds ago
                     val events = usageStatsManager.queryEvents(startTime, endTime)

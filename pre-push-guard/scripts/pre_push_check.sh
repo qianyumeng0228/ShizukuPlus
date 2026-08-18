@@ -327,6 +327,110 @@ else
     echo -e "${COLOR_GREEN}PASS${COLOR_RESET}"
 fi
 
+# 24. drawable/mipmap reference integrity across the whole res/ tree - broke CI 3 builds
+# in a row (d58bb2ea): drawable-v26/ic_launcher.xml still pointed at
+# @mipmap/ic_launcher_foreground after 7c14a77d moved it to @drawable/ic_launcher_foreground.
+# aapt2 only catches this at resource-link time (too late for the pre-push guard unless
+# Gradle runs), same class of gap as the string-reference check above but for drawable/mipmap
+# resources. Originally this only scanned ic_launcher*.xml (where the bug first surfaced);
+# generalized to scan every XML file under res/ since the same dangling-reference bug can
+# occur anywhere, not just adaptive-icon XML.
+step "Checking drawable/mipmap references resolve"
+MISSING_ICON_REFS=$(python3 - <<'PYEOF'
+import re, glob, os
+# mipmap and drawable are DISTINCT resource types in Android (R.mipmap vs R.drawable) - a
+# file under drawable/foo.xml does NOT satisfy an @mipmap/foo reference, even though they
+# share a base name. This is exactly what let the original bug slip past a same-named-file
+# check: drawable/ic_launcher_foreground.xml existed, but the reference was @mipmap/... and
+# nothing existed under any mipmap*/ dir with that name. Track per resource type separately.
+defined = {'drawable': set(), 'mipmap': set()}
+for restype in defined:
+    for f in glob.glob(f'manager/src/main/res/{restype}*/*') + glob.glob(f'core/*/src/main/res/{restype}*/*'):
+        defined[restype].add(os.path.splitext(os.path.basename(f))[0])
+
+missing = []
+for f in glob.glob('manager/src/main/res/**/*.xml', recursive=True) + glob.glob('core/*/src/main/res/**/*.xml', recursive=True):
+    for restype, name in re.findall(r'@(drawable|mipmap)/([A-Za-z0-9_]+)', open(f, encoding='utf-8').read()):
+        if name not in defined[restype]:
+            missing.append(f'  {f}: @{restype}/{name}')
+for line in sorted(set(missing)):
+    print(line)
+PYEOF
+)
+if [ ! -z "$MISSING_ICON_REFS" ]; then
+    echo -e "${COLOR_RED}FAIL${COLOR_RESET} (missing drawable/mipmap resource references)"
+    echo "$MISSING_ICON_REFS"
+    ERRORS=$((ERRORS + 1))
+else
+    echo -e "${COLOR_GREEN}PASS${COLOR_RESET}"
+fi
+
+# 25. color reference integrity across the whole res/ tree - same class of dangling-@ref
+# bug as check 24, but for @color/X. Colors can be declared two ways: as <color name="X">
+# entries in values*/colors.xml, OR as filename-based resources under res/color*/ (e.g.
+# selector state-lists like grant_permissions_button_ripple_color_selector.xml) - both count
+# as "defined". Unlike drawable/mipmap, color is a single resource type here so there's no
+# cross-type mismatch to guard against, just existence.
+step "Checking color references resolve"
+MISSING_COLOR_REFS=$(python3 - <<'PYEOF'
+import re, glob, os
+defined = set()
+for f in glob.glob('manager/src/main/res/values*/colors.xml') + glob.glob('core/*/src/main/res/values*/colors.xml'):
+    for m in re.finditer(r'<color\s+name="([^"]+)"', open(f, encoding='utf-8').read()):
+        defined.add(m.group(1))
+for f in glob.glob('manager/src/main/res/color*/*') + glob.glob('core/*/src/main/res/color*/*'):
+    defined.add(os.path.splitext(os.path.basename(f))[0])
+
+missing = []
+for f in glob.glob('manager/src/main/res/**/*.xml', recursive=True) + glob.glob('core/*/src/main/res/**/*.xml', recursive=True):
+    for name in re.findall(r'@color/([A-Za-z0-9_.]+)', open(f, encoding='utf-8').read()):
+        if name not in defined:
+            missing.append(f'  {f}: @color/{name}')
+for line in sorted(set(missing)):
+    print(line)
+PYEOF
+)
+if [ ! -z "$MISSING_COLOR_REFS" ]; then
+    echo -e "${COLOR_RED}FAIL${COLOR_RESET} (missing color resource references)"
+    echo "$MISSING_COLOR_REFS"
+    ERRORS=$((ERRORS + 1))
+else
+    echo -e "${COLOR_GREEN}PASS${COLOR_RESET}"
+fi
+
+# 26. style reference integrity across the whole res/ tree - same class of dangling-@ref
+# bug as checks 24/25, but for @style/X (e.g. android:theme="@style/Foo",
+# style="@style/Bar" attributes in layouts/XML, not just style-parent inheritance which
+# check 19 already covers). Reuses check 19's LIB prefix allowlist to skip styles that are
+# provided by AndroidX/Material/Preference libraries rather than declared in this project,
+# since we can't enumerate every library-provided style name and a naive check would false-
+# positive on nearly every Material3/Widget/TextAppearance/ShapeAppearance reference.
+step "Checking style references resolve"
+MISSING_STYLE_REFS=$(python3 - <<'PYEOF'
+import re, glob
+defined = set()
+for f in glob.glob('manager/src/main/res/values*/*.xml') + glob.glob('core/*/src/main/res/values*/*.xml'):
+    for m in re.finditer(r'<style\s+name="([^"]+)"', open(f, encoding='utf-8').read()):
+        defined.add(m.group(1))
+LIB = re.compile(r'^(Theme|ThemeOverlay\.Material3|ShapeAppearance\.(Material3|M3)|Widget|TextAppearance|Base|Platform|Preference|PreferenceThemeOverlay|Animation|MaterialAlertDialog|CollapsingToolbar)([.$]|$)')
+
+missing = []
+for f in glob.glob('manager/src/main/res/**/*.xml', recursive=True) + glob.glob('core/*/src/main/res/**/*.xml', recursive=True):
+    for name in re.findall(r'@style/([A-Za-z0-9_.]+)', open(f, encoding='utf-8').read()):
+        if name not in defined and not LIB.match(name):
+            missing.append(f'  {f}: @style/{name}')
+for line in sorted(set(missing)):
+    print(line)
+PYEOF
+)
+if [ ! -z "$MISSING_STYLE_REFS" ]; then
+    echo -e "${COLOR_RED}FAIL${COLOR_RESET} (missing style resource references)"
+    echo "$MISSING_STYLE_REFS"
+    ERRORS=$((ERRORS + 1))
+else
+    echo -e "${COLOR_GREEN}PASS${COLOR_RESET}"
+fi
+
 # 17. Dry-Run Build Validation
 step "Validating Gradle build configuration (dry-run)"
 if [ -n "${SKIP_GRADLE_CHECK:-}" ]; then

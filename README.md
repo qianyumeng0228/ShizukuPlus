@@ -27,12 +27,18 @@ Get the latest release from [GitHub Releases](https://github.com/thejaustin/Shiz
 - **Live activity notification respecting toggle** (commit `252d6315`): `ActivityLogSettingsImpl.showNotification()` didn't check the live-activity setting before posting, so disabling the toggle didn't prevent re-notification on the next logged action.
 
 ### Manager App / UI Fixes
+- **Redesigned App Icon**: Added a "Plus" badge in the upper right of the app icon across the board, natively integrating with the original hexagon geometry.
+- **Themed Icon Support**: Implemented a fully vector Material You monochrome icon, enabling the app icon (including the new Plus badge) to respond flawlessly to expressive theme color changes.
 - **Theme change black screen eliminated** (commit `14c529a9`): All appearance settings (accent, icon style, blur, OneUI theme, etc.) now update the UI via Compose recomposition instead of `Activity.recreate()`, eliminating 1-2 second black screens.
-- **Authentic Samsung OneUI one-handed mode** (commit `c82127a6`): One-handed mode now scales content to 75% with bottom-right pivot (matching Samsung's actual behavior) instead of the broken top-padding approach.
+- **Authentic Samsung OneUI one-handed mode**: One-handed mode now scales content to 75% with bottom-center pivot (matching Samsung's actual behavior) instead of the broken top-padding approach. A follow-up fix corrected an initial corner-anchored pivot that squeezed all content into the bottom-right corner.
 - **OneUI Settings header typography** (commit `1c17f3e9`): Settings LargeTopAppBar uses ExtraBold (W800) title at 28sp matching Samsung OneUI 6/7.
 - **Bottom navigation bar overlap** (commits `b5ea9e35`, `ff7bb7d6`, `a49baf00`): Fixed Feature Hub, Settings preferences, Activity Log list, and App search bar all being obscured by the floating bottom nav bar.
 - **Dhizuku Mode setting persistence** (commit `a8251831`): Toggle state now persists immediately.
 - **Update channel respects Dev/Beta** (commit `bbe3ab76`): UpdateChecker now fetches pre-releases when Dev/Beta channel is selected and matches the correct APK asset (Plus vs Drop-In).
+- **"Shizuku is running" status icon**: reverted a garbled server-rack/checkmark redesign back to a clean circle-checkmark glyph.
+- **Update download hang**: silent auto-install via root/Shizuku had no timeout and could wedge forever on a stuck root prompt, leaving the download stuck with no install prompt. Now times out after 5s and falls back to the system installer.
+- **Update progress notification vibration**: progress notification now only alerts once instead of re-buzzing on every progress tick.
+- **Empty logs in manual crash reports** ([#405](https://github.com/thejaustin/ShizukuPlus/issues/405), [#397](https://github.com/thejaustin/ShizukuPlus/issues/397), [#317](https://github.com/thejaustin/ShizukuPlus/issues/317)): the logcat tail filter silenced almost everything; now captures the last 300 unfiltered lines.
 
 ## ✨ Shizuku+ Core Features
 

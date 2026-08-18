@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
@@ -142,7 +143,7 @@ fun ActivityLogScreen() {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(painterResource(R.drawable.ic_empty_log_24), contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(stringResource(R.string.system_hub_activity_log_empty), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.empty_state_title_activity_log_empty), style = MaterialTheme.typography.titleMedium)
             }
         }
     } else {
@@ -184,7 +185,15 @@ private fun ActivityLogRow(record: ActivityLogRecord, dateFormat: java.text.Date
         if (bitmap != null) iconBitmap = bitmap.asImageBitmap()
     }
 
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+    // mergeDescendants: without this, TalkBack stops on each child (icon/name/package/timestamp)
+    // separately when swiping through a long log list - one stop per row instead of four.
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         val bitmap = iconBitmap
         if (bitmap != null) {
             Image(bitmap = bitmap, contentDescription = null, modifier = Modifier.size(40.dp))

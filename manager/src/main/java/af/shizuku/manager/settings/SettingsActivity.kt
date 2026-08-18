@@ -32,6 +32,7 @@ class SettingsActivity : AppActivity(), PreferenceFragmentCompat.OnPreferenceSta
             val tv = themeVersion
             af.shizuku.core.ui.compose.AppTheme(
                 isBlackNightTheme = af.shizuku.manager.app.ThemeHelper.isBlackNightTheme(this),
+                isOneUi = af.shizuku.manager.ShizukuSettings.isOneUiThemeEnabled(),
                 themeVersion = tv
             ) {
                 SettingsScreen(

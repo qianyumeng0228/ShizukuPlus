@@ -81,7 +81,7 @@ fun HomeScreen(
             )
         }
     ) { innerPadding ->
-        // Samsung OneUI one-handed mode: scale content to 75% and anchor to bottom-right corner,
+        // Samsung OneUI one-handed mode: scale content to 75% and anchor to bottom-center,
         // matching Samsung's actual one-handed mode behavior instead of just adding top padding.
         // animateFloatAsState provides a smooth spring-physics transition when toggling the mode.
         val isOneHanded = ShizukuSettings.isOneHandedModeEnabled()
@@ -101,8 +101,8 @@ fun HomeScreen(
                     .graphicsLayer(
                         scaleX = scale,
                         scaleY = scale,
-                        // Pivot at bottom-right corner (Samsung OneUI style)
-                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 1f)
+                        // Pivot at bottom-center (Samsung OneUI style)
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
                     )
             ) {
             if (showEmptyState) {

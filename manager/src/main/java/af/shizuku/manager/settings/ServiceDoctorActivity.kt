@@ -189,11 +189,16 @@ class ServiceDoctorActivity : AppBarActivity() {
                 ))
             }
 
-            // Samsung Device Care / Always sleeping apps
+            // Samsung Device Care / Always sleeping apps. ok=false (not true) is deliberate: this
+            // can't actually detect whether the app is on the Sleeping Apps list (no public API for
+            // that), so it always needs manual review - showing it as a passing green checkmark
+            // (as it did before) contradicted its own "Review" text and hid the exact setting behind
+            // #415 (Samsung freezing the process on screen-lock, watchdog can't recover a frozen
+            // process because the freeze kills it too).
             checks.add(DoctorCheck(
                 getString(R.string.doctor_check_samsung_battery_protection),
                 getString(R.string.doctor_status_review_sleeping_apps),
-                true,
+                false,
                 onFix = { SettingsPage.Samsung.BackgroundUsageLimits.launch(this) }
             ))
 
@@ -241,7 +246,11 @@ class ServiceDoctorActivity : AppBarActivity() {
                                 // is a blocking IPC round-trip, so it must run off Main or it ANRs
                                 // (SHIZUKUPLUS-7H/7P).
                                 withContext(Dispatchers.IO) {
+                                    // Shizuku.newProcess() is a Java platform type - it can return null
+                                    // at runtime (e.g. binder died mid-call) despite Kotlin not flagging
+                                    // it as nullable, which NPEs on p.waitFor() (Sentry SHIZUKUPLUS-8K/8M).
                                     val p = Shizuku.newProcess(arrayOf("device_config", "put", "activity_manager", "max_phantom_processes", "2147483647"), null, null)
+                                        ?: throw IllegalStateException("Shizuku returned a null remote process for newProcess()")
                                     try {
                                         p.waitFor()
                                     } finally {

@@ -156,8 +156,12 @@ object RootCompatHelper {
         try {
             for ((name, mode) in files) {
                 val bytes = context.assets.open(name).use { it.readBytes() }
-                if (!streamToPrivilegedFile(bytes, "$dir/$name", mode)) {
-                    Timber.e("deployBridgeToTmp: failed to write $dir/$name")
+                val result = streamToPrivilegedFile(bytes, "$dir/$name", mode)
+                if (result.exitCode != 0) {
+                    // Previously logged with no detail (SHIZUKUPLUS-8A/8G/8D) — exitCode/stderr are
+                    // needed to tell noexec-mount, EACCES-on-readonly-remount, and Shizuku-died-mid-
+                    // write apart, none of which have the same fix.
+                    Timber.e("deployBridgeToTmp: failed to write $dir/$name (exit=${result.exitCode}, stderr=${result.stderr.take(500)})")
                     return@withContext null
                 }
             }
@@ -170,18 +174,17 @@ object RootCompatHelper {
 
     /** Writes [bytes] to [path] via a privileged `cat`, then chmods it. Streams over stdin so no
      *  cross-UID file read is needed (works in ADB mode, not just root). */
-    private fun streamToPrivilegedFile(bytes: ByteArray, path: String, mode: String): Boolean {
-        if (!Shizuku.pingBinder()) return false
+    private fun streamToPrivilegedFile(bytes: ByteArray, path: String, mode: String): ShizukuCaptureResult {
+        if (!Shizuku.pingBinder()) return ShizukuCaptureResult(-1, "", "Shizuku binder not available")
         val escaped = escapeShellSingleQuote(path)
         // rm -f first: a prior deploy may have left the file as read-only (444 for the dex),
         // and `cat >` would fail with EACCES even for the file's own owner. outputStream is
         // the child's stdin; writing then closing sends EOF so `cat` completes.
-        val result = ShizukuProcessUtils.runPrivilegedCapture(
+        return ShizukuProcessUtils.runPrivilegedCapture(
             arrayOf("sh", "-c", "rm -f '$escaped' && cat > '$escaped' && chmod $mode '$escaped'"),
             joinTimeoutMs = 500,
             writeStdin = { it.use { stream -> stream.write(bytes) } }
         )
-        return result.exitCode == 0
     }
 
     /** Result of [selfTest]: [ok] is a coarse pass/fail; [report] is a human-readable multi-line

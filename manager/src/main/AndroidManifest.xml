@@ -250,12 +250,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".legacy.ShellConsentActivity"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
-            android:theme="@style/GrantPermissions" />
-        <activity
             android:name=".legacy.LegacyIsNotSupportedActivity"
             android:excludeFromRecents="true"
             android:exported="true"
@@ -340,15 +334,6 @@
             <intent-filter android:priority="1000">
                 <action android:name="rikka.shizuku.intent.action.REQUEST_BINDER" />
                 <action android:name="${applicationId}.intent.action.REQUEST_BINDER" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
-            android:name=".shell.ShellConsentActionReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="af.shizuku.plus.ACTION_SHELL_CONSENT_ALLOW" />
-                <action android:name="af.shizuku.plus.ACTION_SHELL_CONSENT_DENY" />
             </intent-filter>
         </receiver>
 

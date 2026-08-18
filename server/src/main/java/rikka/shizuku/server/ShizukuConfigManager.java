@@ -5,6 +5,8 @@ import static rikka.shizuku.server.ServerConstants.PERMISSION;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.system.ErrnoException;
+import android.system.Os;
 import android.util.AtomicFile;
 
 import androidx.annotation.Nullable;
@@ -99,11 +101,18 @@ public class ShizukuConfigManager extends ConfigManager {
 
                 ATOMIC_FILE.finishWrite(stream);
 
-                // Ensure permissions allow both root and shell to read/write
+                // Closing #419: the config file was previously world-readable/writable.
+                // Root bypasses DAC checks entirely, so it doesn't need explicit bits here;
+                // only shell needs explicit access, granted via group ownership. No "other"
+                // access is needed, so we restrict to owner+group read/write only.
                 File file = ATOMIC_FILE.getBaseFile();
                 if (file.exists()) {
-                    file.setReadable(true, false);
-                    file.setWritable(true, false);
+                    try {
+                        Os.chmod(file.getAbsolutePath(), 0660);
+                        Os.chown(file.getAbsolutePath(), -1, android.os.Process.SHELL_UID);
+                    } catch (ErrnoException e) {
+                        LOGGER.w("failed to set permissions on " + file.getAbsolutePath() + ": " + e);
+                    }
                 }
                 LOGGER.v("config saved to " + file.getAbsolutePath());
             } catch (Throwable tr) {

@@ -18,7 +18,24 @@ on:
         default: false
 
 jobs:
+  pre-push-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: Run Pre-Push Guard (static checks only, no Gradle)
+        env:
+          SKIP_GRADLE_CHECK: '1'
+        run: |
+          chmod +x pre-push-guard/scripts/pre_push_check.sh
+          bash pre-push-guard/scripts/pre_push_check.sh
+
   lint:
+    needs: [pre-push-guard]
     runs-on: ubuntu-latest
     env:
       ANDROID_HOME: "/usr/local/lib/android/sdk"
@@ -45,8 +62,9 @@ jobs:
         run: ./gradlew :manager:lint
 
   build:
+    needs: [pre-push-guard]
     runs-on: ubuntu-latest
-    
+
     env:
       ANDROID_HOME: "/usr/local/lib/android/sdk"
       KEYSTORE: ${{ secrets.KEYSTORE }}

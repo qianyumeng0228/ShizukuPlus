@@ -695,14 +695,6 @@
     <string name="notification_auth_missing_message">Add the “auth” extra to your intent. You can find your token by tapping “View intents” in the app.</string>
     <string name="notification_auth_invalid_title">Invalid auth token</string>
     <string name="notification_auth_invalid_message">Make sure the token in your intent matches the one shown under “View intents” in the app.</string>
-    <string name="notification_channel_shell_consent">Shell access requests</string>
-    <string name="notification_shell_consent_title">Shell access request</string>
-    <string name="notification_shell_consent_title_identified">%s is requesting shell access</string>
-    <string name="notification_shell_consent_text">Tap to review a request for privileged Shizuku access from a shell client (such as rish or adb).</string>
-    <string name="notification_shell_consent_text_identified">Only allow if you just ran a shell command.</string>
-    <string name="notification_shell_consent_action_allow">Allow always</string>
-    <string name="notification_shell_consent_action_deny">Deny</string>
-
     <!-- Permission related, appears in system permission UI -->
     <string name="permission_group_label" translatable="false">Shizuku</string>
     <string name="permission_group_description" translatable="false">@string/permission_label</string>
@@ -711,11 +703,6 @@
     <string name="permission_warning_template"><![CDATA[Allow <b>%1$s</b> to %2$s?]]></string>
     <string name="grant_dialog_button_allow_always">Allow all the time</string>
     <string name="grant_dialog_button_deny">"Deny"</string>
-
-    <string name="shell_consent_dialog_title">A shell client (such as rish or adb) is requesting privileged Shizuku access.\n\nOnly allow this if you just ran a shell command yourself. The app requesting access cannot be identified.</string>
-    <string name="shell_consent_dialog_title_identified">%s is requesting privileged Shizuku shell access.\n\nOnly allow this if you just ran a shell command yourself.</string>
-    <string name="shell_consent_button_allow">Allow</string>
-    <string name="shell_consent_retry_hint">Authorized — run the command again to connect (app was paused while waiting)</string>
 
     <!-- Starter -->
     <string name="starter">Starter</string>
@@ -1099,4 +1086,9 @@
     <string name="automation_plugin_condition_title">Shizuku+ service running</string>
     <string name="automation_plugin_condition_description">This condition is satisfied whenever the Shizuku+ service is running.</string>
     <string name="automation_plugin_condition_blurb">Shizuku+ service is running</string>
+
+    <string name="cd_navigate_back">Back</string>
+    <string name="cd_settings_search">Search</string>
+    <string name="cd_settings_search_clear">Clear</string>
+    <string name="settings_search_empty_state">No settings found</string>
 </resources>

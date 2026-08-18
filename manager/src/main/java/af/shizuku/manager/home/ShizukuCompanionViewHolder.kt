@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 import rikka.recyclerview.BaseViewHolder
 import rikka.recyclerview.BaseViewHolder.Creator
 import rikka.shizuku.Shizuku
+import timber.log.Timber
 
 class ShizukuCompanionViewHolder(
     private val binding: HomeShizukuCompanionBinding,
@@ -108,6 +109,11 @@ class ShizukuCompanionViewHolder(
                 // self as already occupying the role), but this is the hard stop that actually
                 // prevents the destructive install regardless of how this click was reached.
                 Toast.makeText(v.context, R.string.compat_hub_install_fail, Toast.LENGTH_SHORT).show()
+            } else if (StockShizukuCompat.isPackageOccupiedByDifferentSigner(v.context)) {
+                // #412: pm install -r always fails with INSTALL_FAILED_UPDATE_INCOMPATIBLE here
+                // (opaquely, before this check existed) - something else, e.g. genuine stock
+                // Shizuku, already occupies moe.shizuku.privileged.api with a different cert.
+                Toast.makeText(v.context, R.string.compat_hub_install_signature_conflict, Toast.LENGTH_LONG).show()
             } else {
                 // Must be on external storage, not the app's private cache/files dir: `pm install`
                 // runs via a shell process spawned by Shizuku.newProcess (UID 2000) or root, neither
@@ -140,7 +146,38 @@ class ShizukuCompanionViewHolder(
                     }
 
                     val tmpPath = "/data/local/tmp/compat.apk"
-                    val success = runPrivilegedCommand("cp '${tmpApk.absolutePath}' '$tmpPath' && chmod 644 '$tmpPath' && pm install -r '$tmpPath' && rm '$tmpPath'")
+                    // Wired straight to a Boolean previously (#412 "compat hub not installing" had
+                    // zero diagnostic output) - pm install's actual stderr (e.g.
+                    // INSTALL_FAILED_UPDATE_INCOMPATIBLE from a signing-cert mismatch if something
+                    // else already occupies moe.shizuku.privileged.api) is now logged so a failure
+                    // is self-diagnosing from logcat/Sentry instead of a bare "failed" toast.
+                    val installCmd = "cp '${tmpApk.absolutePath}' '$tmpPath' && chmod 644 '$tmpPath' && pm install -r '$tmpPath' 2>&1; echo EXIT:$?; rm -f '$tmpPath'"
+                    val installOutput = withContext(Dispatchers.IO) {
+                        if (Shizuku.pingBinder()) {
+                            try {
+                                val process = Shizuku.newProcess(arrayOf("sh", "-c", installCmd), null, null)
+                                try {
+                                    process.inputStream.bufferedReader().readText().also { process.waitFor() }
+                                } finally {
+                                    try { process.destroy() } catch (_: Exception) {}
+                                }
+                            } catch (e: Exception) {
+                                e.message ?: "unknown error"
+                            }
+                        } else if (MigrationHelper.isRootAvailable()) {
+                            try {
+                                Shell.cmd(installCmd).exec().out.joinToString("\n")
+                            } catch (e: Exception) {
+                                e.message ?: "unknown error"
+                            }
+                        } else {
+                            "no privileged access available"
+                        }
+                    }
+                    val success = installOutput.contains("EXIT:0")
+                    if (!success) {
+                        Timber.tag("ShizukuCompanion").e("compat hub install failed: %s", installOutput.take(1000))
+                    }
                     try {
                         tmpApk.delete()
                     } catch (e: Exception) {

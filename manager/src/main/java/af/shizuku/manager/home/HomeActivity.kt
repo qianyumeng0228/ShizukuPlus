@@ -195,7 +195,8 @@ open class HomeActivity : AppActivity(), MavericksView {
             val context = LocalContext.current
             af.shizuku.core.ui.compose.AppTheme(
                 darkTheme = androidx.compose.foundation.isSystemInDarkTheme(),
-                isBlackNightTheme = af.shizuku.manager.app.ThemeHelper.isBlackNightTheme(context)
+                isBlackNightTheme = af.shizuku.manager.app.ThemeHelper.isBlackNightTheme(context),
+                isOneUi = ShizukuSettings.isOneUiThemeEnabled()
             ) {
                 HomeScreen(
                 isEditMode = isEditMode,

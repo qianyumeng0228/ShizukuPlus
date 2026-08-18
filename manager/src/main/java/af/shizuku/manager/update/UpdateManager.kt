@@ -65,49 +65,55 @@ class UpdateManager(private val context: Context) {
     fun downloadUpdate(downloadUrl: String, versionName: String) {
         createNotificationChannel()
 
-        val fileName = "Shizuku+-v$versionName.apk"
-        val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+        // Callers invoke this from a UI click handler; the file-exists check, delete, and
+        // cleanup() below are all blocking disk I/O, so this whole body runs on IO instead of
+        // whatever thread called downloadUpdate() (previously janked/risked ANR on slow storage
+        // or with many stale APKs to clean up).
+        scope.launch(Dispatchers.IO) {
+            val fileName = "Shizuku+-v$versionName.apk"
+            val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
 
-        // Check if file already exists and delete it
-        if (file.exists()) {
-            file.delete()
-        }
+            // Check if file already exists and delete it
+            if (file.exists()) {
+                file.delete()
+            }
 
-        // Old update APKs are never referenced again once a newer one starts downloading.
-        cleanup()
+            // Old update APKs are never referenced again once a newer one starts downloading.
+            cleanup()
 
-        val request = DownloadManager.Request(Uri.parse(downloadUrl))
-            .setTitle(context.getString(R.string.update_downloading_title))
-            .setDescription(context.getString(R.string.update_downloading_description, versionName))
-            // HIDDEN, not VISIBLE_NOTIFY_COMPLETED — monitorDownload() already drives our own
-            // progress/install notifications; VISIBLE_NOTIFY_COMPLETED would show a second,
-            // redundant system download notification alongside them.
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
-            .setDestinationUri(Uri.fromFile(file))
-            .setAllowedOverMetered(true)
-            .setAllowedOverRoaming(true)
-            .setMimeType("application/vnd.android.package-archive")
+            val request = DownloadManager.Request(Uri.parse(downloadUrl))
+                .setTitle(context.getString(R.string.update_downloading_title))
+                .setDescription(context.getString(R.string.update_downloading_description, versionName))
+                // HIDDEN, not VISIBLE_NOTIFY_COMPLETED — monitorDownload() already drives our own
+                // progress/install notifications; VISIBLE_NOTIFY_COMPLETED would show a second,
+                // redundant system download notification alongside them.
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
+                .setDestinationUri(Uri.fromFile(file))
+                .setAllowedOverMetered(true)
+                .setAllowedOverRoaming(true)
+                .setMimeType("application/vnd.android.package-archive")
 
-        // Add after-download broadcast
-        request.addRequestHeader("User-Agent", "Shizuku+/${versionName}")
+            // Add after-download broadcast
+            request.addRequestHeader("User-Agent", "Shizuku+/${versionName}")
 
-        try {
-            downloadId = downloadManager.enqueue(request)
+            try {
+                downloadId = downloadManager.enqueue(request)
 
-            // Save download ID
-            context.getSharedPreferences("update_prefs", Context.MODE_PRIVATE)
-                .edit()
-                .putLong(DOWNLOAD_ID_PREF, downloadId)
-                .apply()
+                // Save download ID
+                context.getSharedPreferences("update_prefs", Context.MODE_PRIVATE)
+                    .edit()
+                    .putLong(DOWNLOAD_ID_PREF, downloadId)
+                    .apply()
 
-            Timber.tag(TAG).d("Download started: $downloadUrl, ID: $downloadId")
+                Timber.tag(TAG).d("Download started: $downloadUrl, ID: $downloadId")
 
-            // Monitor download progress
-            monitorDownload(downloadId, file, versionName)
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Failed to start download")
-            Sentry.captureException(e)
-            showDownloadErrorNotification()
+                // Monitor download progress
+                monitorDownload(downloadId, file, versionName)
+            } catch (e: Exception) {
+                Timber.tag(TAG).e(e, "Failed to start download")
+                Sentry.captureException(e)
+                showDownloadErrorNotification()
+            }
         }
     }
 
@@ -146,8 +152,14 @@ class UpdateManager(private val context: Context) {
                                 break
                             }
                             DownloadManager.STATUS_FAILED -> {
+                                // COLUMN_REASON holds a DownloadManager.ERROR_* code when
+                                // STATUS_FAILED - without it "Download failed" (SHIZUKUPLUS-8H)
+                                // gives no way to tell insufficient-storage, HTTP errors, and
+                                // unresumable transfers apart.
+                                val reasonIdx = cursor.getColumnIndex(DownloadManager.COLUMN_REASON)
+                                val reason = if (reasonIdx >= 0) cursor.getInt(reasonIdx) else -1
                                 cursor.close()
-                                Timber.tag(TAG).e("Download failed")
+                                Timber.tag(TAG).e("Download failed (reason=$reason)")
                                 showDownloadErrorNotification()
                                 break
                             }
@@ -182,6 +194,7 @@ class UpdateManager(private val context: Context) {
             .setContentText(context.getString(R.string.update_downloading_progress, versionName, progress))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
+            .setOnlyAlertOnce(true)
             .setProgress(100, progress, false)
             .build()
 
@@ -301,24 +314,39 @@ class UpdateManager(private val context: Context) {
      */
     suspend fun installApk(file: File): Boolean {
         try {
-            val isRootOrShizuku = withContext(Dispatchers.IO) {
-                com.topjohnwu.superuser.Shell.getShell().isRoot || rikka.shizuku.Shizuku.pingBinder()
-            }
-            if (isRootOrShizuku) {
-                Timber.tag(TAG).d("Attempting silent install via Shizuku/Root...")
-                val result = withContext(Dispatchers.IO) {
-                    com.topjohnwu.superuser.Shell.cmd("pm install -r -d \"${file.absolutePath}\"").exec()
+            // Shell.getShell()/pingBinder() are blocking calls that can wedge forever if a
+            // root prompt is ignored or the Shizuku binder is stuck — without a timeout the
+            // download just hangs with no install notification ever shown (never falls
+            // through to the system installer below).
+            val silentInstallHandled = withTimeoutOrNull(5000) {
+                val isRootOrShizuku = withContext(Dispatchers.IO) {
+                    com.topjohnwu.superuser.Shell.getShell().isRoot || rikka.shizuku.Shizuku.pingBinder()
                 }
-                if (result.isSuccess) {
-                    Timber.tag(TAG).i("Silent install successful")
-                    return true
-                } else {
-                    Timber.tag(TAG).w("Silent install failed (likely signature mismatch): ${result.out}")
-                    if (UpdateInstaller.forceUpdateWithShizuku(context, file)) {
-                        Timber.tag(TAG).i("Force-update background script initiated to handle signature mismatch")
-                        return true
+                if (isRootOrShizuku) {
+                    Timber.tag(TAG).d("Attempting silent install via Shizuku/Root...")
+                    val result = withContext(Dispatchers.IO) {
+                        com.topjohnwu.superuser.Shell.cmd("pm install -r -d \"${file.absolutePath}\"").exec()
                     }
+                    if (result.isSuccess) {
+                        Timber.tag(TAG).i("Silent install successful")
+                        true
+                    } else {
+                        Timber.tag(TAG).w("Silent install failed (likely signature mismatch): ${result.out}")
+                        if (UpdateInstaller.forceUpdateWithShizuku(context, file)) {
+                            Timber.tag(TAG).i("Force-update background script initiated to handle signature mismatch")
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                } else {
+                    false
                 }
+            }
+            if (silentInstallHandled == null) {
+                Timber.tag(TAG).w("Silent install attempt timed out; falling back to system installer")
+            } else if (silentInstallHandled) {
+                return true
             }
 
             val apkUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

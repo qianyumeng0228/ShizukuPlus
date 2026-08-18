@@ -33,18 +33,27 @@ class WatchdogService : Service() {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var job: Job? = null
 
-    private fun startForegroundSafely() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                NOTIFICATION_ID_WATCHDOG,
-                buildNotification(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-            )
-        } else {
-            startForeground(
-                NOTIFICATION_ID_WATCHDOG,
-                buildNotification()
-            )
+    // Returns false on failure so callers can bail out via stopSelf() instead of crashing
+    // (RemoteServiceException$CannotPostForegroundServiceNotificationException, background-start
+    // restrictions, etc. — same pattern as AutomationService.ensureForeground(), SHIZUKUPLUS-5P).
+    private fun startForegroundSafely(): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID_WATCHDOG,
+                    buildNotification(),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                )
+            } else {
+                startForeground(
+                    NOTIFICATION_ID_WATCHDOG,
+                    buildNotification()
+                )
+            }
+            true
+        } catch (e: Throwable) {
+            Timber.tag(TAG).w(e, "startForeground refused; stopping watchdog service")
+            false
         }
     }
 
@@ -69,7 +78,11 @@ class WatchdogService : Service() {
 
         // Must be called within 5s of startForegroundService(); do it before any
         // coroutine work so that a heavy initialisation path can never delay it.
-        startForegroundSafely()
+        if (!startForegroundSafely()) {
+            isRunning.set(false)
+            stopSelf()
+            return
+        }
 
         job = scope.launch {
             ShizukuStateMachine.asFlow().collectLatest { state ->
@@ -95,7 +108,11 @@ class WatchdogService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForegroundSafely()
+        if (!startForegroundSafely()) {
+            isRunning.set(false)
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (intent?.action == ACTION_STOP_SERVICE) {
             stopSelf()
             return START_NOT_STICKY

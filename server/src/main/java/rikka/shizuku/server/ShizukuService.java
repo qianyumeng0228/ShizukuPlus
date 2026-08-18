@@ -411,18 +411,28 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
         if (isManagerAppId(UserHandleCompat.getAppId(callingUid))) {
             return true;
         }
-        if (clientRecord == null) {
-            if (checkCallingPermission() == PackageManager.PERMISSION_GRANTED) {
-                return true;
-            }
-            // Also allow if the UID was explicitly authorized via the shell consent flow.
-            // Apps that don't declare a Shizuku permission in their manifest (e.g. Termux)
-            // never receive grantRuntimePermission(), so checkCallingPermission() always returns
-            // DENIED for them even after the user tapped "Allow". Checking configManager flags
-            // directly bridges this gap without touching OS permission state.
-            if ((getFlagsForUidInternal(callingUid, ConfigManager.MASK_PERMISSION, false) & ConfigManager.FLAG_ALLOWED) == ConfigManager.FLAG_ALLOWED) {
-                return true;
-            }
+        // Already-attached clients (e.g. rish, after a successful attachApplication()) have a
+        // non-null ClientRecord whose `allowed` flag is the authoritative "user granted access"
+        // signal - set during attachApplication from the config entry, or later via the shell
+        // consent flow's AuthorizationManager.grant(). This must be checked independently of the
+        // clientRecord == null branch below: that branch's fallbacks (OS permission check,
+        // config-flag bridge) exist for callers enforceCallingPermission() is invoked on BEFORE
+        // they've attached, and skip entirely once clientRecord is non-null - which left every
+        // attached-and-authorized non-manager caller (rish included) hitting the final `return
+        // false` and getting a silent SecurityException out of newProcess() (#391 follow-up).
+        if (clientRecord != null) {
+            return clientRecord.allowed;
+        }
+        if (checkCallingPermission() == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        // Also allow if the UID was explicitly authorized via the shell consent flow.
+        // Apps that don't declare a Shizuku permission in their manifest (e.g. Termux)
+        // never receive grantRuntimePermission(), so checkCallingPermission() always returns
+        // DENIED for them even after the user tapped "Allow". Checking configManager flags
+        // directly bridges this gap without touching OS permission state.
+        if ((getFlagsForUidInternal(callingUid, ConfigManager.MASK_PERMISSION, false) & ConfigManager.FLAG_ALLOWED) == ConfigManager.FLAG_ALLOWED) {
+            return true;
         }
         return false;
     }
@@ -838,11 +848,19 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
 
     @Override
     public IRemoteProcess newProcess(String[] cmd, String[] env, String dir) {
+        // Every branch below this point (SU-bridge mocking, build.prop redirection, iptables/pm
+        // interception) executes real, privileged Runtime.exec() side effects on `cmd` before
+        // ever reaching newProcessInternal()'s own enforceCallingPermission("newProcess") check —
+        // an unauthorized caller could trigger real root mkdir/cp/iptables/pm execution purely by
+        // having a live binder reference, with the permission check only gating the *return value*.
+        // Enforce here, first, so no caller-supplied cmd is ever inspected/executed pre-authorization.
+        enforceCallingPermission("newProcess");
+
         int callingUid = Binder.getCallingUid();
         int callingPid = Binder.getCallingPid();
         ClientRecord caller = clientManager.findClient(callingUid, callingPid);
         String callingPkg = (caller != null) ? caller.packageName : "unknown";
-        
+
         // Catastrophic Command Interceptor (Storage Safety)
         if (isCatastrophicCommand(cmd)) {
             LOGGER.e("Catastrophic command blocked from execution by %s: %s", callingPkg, String.join(" ", cmd));
@@ -892,7 +910,17 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
         // Global Magisk Environment Variable Injection
         if (isFeatureEnabled("root_magisk_mocking")) {
             if (env == null) {
-                env = new String[]{"MAGISK_VER=26.4", "MAGISK_VER_CODE=26400"};
+                // A null env is supposed to inherit the server process's environment (BOOTCLASSPATH,
+                // ANDROID_DATA, ANDROID_ROOT, etc.) — replacing it outright with just the two Magisk
+                // vars strips that boot env, so any child spawning app_process (e.g. a UserService)
+                // dies instantly with "ANDROID_DATA environment variable unset" (#410).
+                java.util.List<String> envList = new java.util.ArrayList<>();
+                for (java.util.Map.Entry<String, String> entry : System.getenv().entrySet()) {
+                    envList.add(entry.getKey() + "=" + entry.getValue());
+                }
+                envList.add("MAGISK_VER=26.4");
+                envList.add("MAGISK_VER_CODE=26400");
+                env = envList.toArray(new String[0]);
             } else {
                 java.util.List<String> envList = new java.util.ArrayList<>(java.util.Arrays.asList(env));
                 envList.add("MAGISK_VER=26.4");
@@ -1011,10 +1039,8 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
             // Dynamic Shell Function Injection for Deep Root Spoofing
             if (isFeatureEnabled("su_bridge") && (baseCmd.equals("sh") || baseCmd.endsWith("/sh")) && cmd.length >= 3 && (cmd[1].equals("-c") || cmd[1].equals("--command"))) {
                 String originalScript = cmd[2];
-                if (!originalScript.startsWith("id() {")) {
-                    String mockHeader = "id() { if [ \"$1\" = \"-u\" ] || [ \"$1\" = \"-g\" ] || [ \"$1\" = \"-G\" ]; then echo 0; elif [ \"$1\" = \"-Z\" ]; then echo \"u:r:su:s0\"; else echo \"uid=0(root) gid=0(root) groups=0(root)\"; fi; }; " +
-                                        "whoami() { echo root; }; " +
-                                        "magisk() { if [ \"$1\" = \"-v\" ] || [ \"$1\" = \"--version\" ]; then echo \"26.4:MAGISKSU\"; elif [ \"$1\" = \"-V\" ]; then echo 26400; else echo \"Magisk v26.4 (26400) - Shizuku+ Bridge Mode\"; fi; }; " +
+                if (!originalScript.startsWith("magisk() {")) {
+                    String mockHeader = "magisk() { if [ \"$1\" = \"-v\" ] || [ \"$1\" = \"--version\" ]; then echo \"26.4:MAGISKSU\"; elif [ \"$1\" = \"-V\" ]; then echo 26400; else echo \"Magisk v26.4 (26400) - Shizuku+ Bridge Mode\"; fi; }; " +
                                         "su() { if [ \"$1\" = \"-v\" ] || [ \"$1\" = \"--version\" ]; then echo \"26.4:MAGISKSU\"; elif [ \"$1\" = \"-V\" ]; then echo 26400; elif [ \"$1\" = \"-c\" ]; then shift; eval \"$@\"; else eval \"$@\"; fi; }; " +
                                         "getenforce() { echo Permissive; }; ";
                     cmd[2] = mockHeader + originalScript;
@@ -1672,10 +1698,15 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
     @Override
 @android.annotation.SuppressLint("NewApi")
     public void showPermissionConfirmation(int requestCode, @NonNull ClientRecord clientRecord, int callingUid, int callingPid, int userId) {
+        // ai may be null for a caller PackageManager can't resolve on this device/profile (same
+        // class of PM-lookup gap already worked around for the shell-consent path, #391) - that
+        // used to make this method bail silently, leaving the client's requestPermission() call
+        // hanging forever with no dispatch and no error. Fall through with a null ApplicationInfo;
+        // the intent always carries clientRecord.packageName (client-supplied but harmless here -
+        // it's a display label only, callingUid is what's actually authorized) so
+        // RequestPermissionActivity can still show a real "callingPackage/uid is requesting..."
+        // dialog instead of dropping the request.
         ApplicationInfo ai = Android17Compat.getApplicationInfo(clientRecord.packageName, 0, userId);
-        if (ai == null) {
-            return;
-        }
 
         PackageInfo pi = Android17Compat.getPackageInfo(MANAGER_APPLICATION_ID, 0, userId);
         UserInfo userInfo = UserManagerApis.getUserInfo(userId);
@@ -1694,7 +1725,10 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
                 .putExtra("uid", callingUid)
                 .putExtra("pid", callingPid)
                 .putExtra("requestCode", requestCode)
-                .putExtra("applicationInfo", ai);
+                .putExtra("callingPackage", clientRecord.packageName);
+        if (ai != null) {
+            intent.putExtra("applicationInfo", ai);
+        }
         ActivityManagerApis.startActivityNoThrow(intent, null, isWorkProfileUser ? 0 : userId);
     }
 
@@ -1942,8 +1976,14 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
         if (isFeatureEnabled("binder_logging")) {
             LOGGER.i("Binder transaction: code=%d, calling uid=%d, flags=%d", code, Binder.getCallingUid(), flags);
         }
+        // enforceInterface() only validates the AIDL descriptor token, not caller identity — every
+        // branch here additionally needs enforceCallingPermission(), matching every other exposed
+        // method in Service.java. Without it, any process with a live IShizukuService binder could
+        // read the full installed-package list (getApplications) or, worst case, receive the raw
+        // DevicePolicyManager system binder (getDhizukuBinder) with zero authorization.
         if (code == ServerConstants.BINDER_TRANSACTION_getApplications) {
             data.enforceInterface(ShizukuApiConstants.BINDER_DESCRIPTOR);
+            enforceCallingPermission("getApplications");
             int userId = data.readInt();
             ParcelableListSlice<PackageInfo> result = getApplications(userId);
             reply.writeNoException();
@@ -1951,11 +1991,13 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
             return true;
         } else if (code == ServerConstants.BINDER_TRANSACTION_isCustomApiEnabled) {
             data.enforceInterface(ShizukuApiConstants.BINDER_DESCRIPTOR);
+            enforceCallingPermission("isCustomApiEnabled");
             reply.writeNoException();
             reply.writeInt(1); // Shizuku+ server always has it enabled at server level if running
             return true;
         } else if (code == ServerConstants.BINDER_TRANSACTION_getDhizukuBinder) {
             data.enforceInterface(ShizukuApiConstants.BINDER_DESCRIPTOR);
+            enforceCallingPermission("getDhizukuBinder");
             // In Shizuku+, we share the DevicePolicyManager binder if Dhizuku mode is "active"
             // (The manager app controls this via settings, but the server just provides the binder if asked)
             IBinder dpm = ServiceManager.getService(Context.DEVICE_POLICY_SERVICE);
@@ -1964,6 +2006,7 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
             return true;
         } else if (code == ServerConstants.BINDER_TRANSACTION_getServerPatchVersion) {
             data.enforceInterface(ShizukuApiConstants.BINDER_DESCRIPTOR);
+            enforceCallingPermission("getServerPatchVersion");
             reply.writeNoException();
             reply.writeInt(ShizukuApiConstants.SERVER_PATCH_VERSION);
             return true;

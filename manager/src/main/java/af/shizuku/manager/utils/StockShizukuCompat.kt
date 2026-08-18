@@ -3,10 +3,49 @@ package af.shizuku.manager.utils
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 
 object StockShizukuCompat {
 
     const val PACKAGE = "moe.shizuku.privileged.api"
+
+    /**
+     * True if [PACKAGE] is currently occupied by something signed with a DIFFERENT certificate
+     * than this app's compat shim asset (which is signed with the same key as this app itself).
+     * `pm install -r` of the bundled compat.apk over such a package always fails with
+     * INSTALL_FAILED_UPDATE_INCOMPATIBLE - previously an opaque failure (#412). This lets the
+     * install button show a specific, actionable message instead of attempting and failing.
+     */
+    fun isPackageOccupiedByDifferentSigner(context: Context): Boolean {
+        if (context.packageName == PACKAGE) return false
+        return try {
+            val ownSignatures = getSigningCertificates(context, context.packageName) ?: return false
+            val targetSignatures = getSigningCertificates(context, PACKAGE) ?: return false
+            ownSignatures.intersect(targetSignatures).isEmpty()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun getSigningCertificates(context: Context, packageName: String): Set<String>? {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val info = context.packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                val signingInfo = info.signingInfo ?: return null
+                val sigs = if (signingInfo.hasMultipleSigners()) signingInfo.apkContentsSigners else signingInfo.signingCertificateHistory
+                sigs.map { it.toByteArray().toHexString() }.toSet()
+            } else {
+                @Suppress("DEPRECATION")
+                val info = context.packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
+                @Suppress("DEPRECATION")
+                info.signatures?.map { it.toByteArray().toHexString() }?.toSet()
+            }
+        } catch (e: PackageManager.NameNotFoundException) {
+            null
+        }
+    }
+
+    private fun ByteArray.toHexString(): String = joinToString("") { "%02x".format(it) }
 
     fun isInstalled(context: Context): Boolean {
         // The dropin flavor's own applicationId IS "moe.shizuku.privileged.api" (by design, so it

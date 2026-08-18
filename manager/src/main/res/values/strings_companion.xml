@@ -16,4 +16,5 @@
     <string name="compat_hub_installing">Installing…</string>
     <string name="compat_hub_install_success">Compat Hub installed successfully!</string>
     <string name="compat_hub_install_fail">Failed to install. Ensure Shizuku+ or Root is active.</string>
+    <string name="compat_hub_install_signature_conflict">Can\'t install: a different app (e.g. stock Shizuku) is already installed as moe.shizuku.privileged.api with an incompatible signature. Uninstall it first.</string>
 </resources>

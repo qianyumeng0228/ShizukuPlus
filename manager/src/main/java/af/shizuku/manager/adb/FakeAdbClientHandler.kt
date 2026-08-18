@@ -22,6 +22,7 @@ class FakeAdbClientHandler(
     companion object {
         private const val TAG = "FakeAdbClient"
         private const val PREFS_NAME = "fake_adb_keys"
+        private const val MAX_ADB_PAYLOAD_SIZE = 16 * 1024 * 1024 // 16MB, well above real adb's ~1MB max payload
 
         // Multiplexing
         private val localIdCounter = AtomicInteger(1)
@@ -235,6 +236,12 @@ class FakeAdbClientHandler(
 
         var data: ByteArray? = null
         if (data_length > 0) {
+            // data_length comes straight off the wire before CRC/magic are verified, so a
+            // corrupt or hostile peer can claim an arbitrary size here; without a cap this
+            // allocates unboundedly and OOMs the process (Sentry SHIZUKUPLUS-8F, 825MB alloc).
+            if (data_length > MAX_ADB_PAYLOAD_SIZE) {
+                throw java.io.IOException("ADB message data_length $data_length exceeds max $MAX_ADB_PAYLOAD_SIZE")
+            }
             data = ByteArray(data_length)
             inputStream.readFully(data)
         }

@@ -108,7 +108,7 @@ fun SettingsScreen(
                         IconButton(onClick = onNavigateUp) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_back_24),
-                                contentDescription = stringResource(R.string.accessibility_back)
+                                contentDescription = stringResource(R.string.cd_navigate_back)
                             )
                         }
                     },
@@ -116,7 +116,7 @@ fun SettingsScreen(
                         IconButton(onClick = { isSearchActive = true }) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_search_24),
-                                contentDescription = stringResource(R.string.accessibility_search)
+                                contentDescription = stringResource(R.string.cd_settings_search)
                             )
                         }
                     },
@@ -142,7 +142,7 @@ fun SettingsScreen(
                                     searchQuery = it
                                     onSearchQueryChanged(it)
                                 },
-                                placeholder = { Text(stringResource(R.string.settings_search_hint_compose)) },
+                                placeholder = { Text(stringResource(R.string.settings_search_hint)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .focusRequester(focusRequester),
@@ -175,7 +175,7 @@ fun SettingsScreen(
                         }) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_back_24),
-                                contentDescription = stringResource(R.string.accessibility_back)
+                                contentDescription = stringResource(R.string.cd_navigate_back)
                             )
                         }
                     },
@@ -184,7 +184,7 @@ fun SettingsScreen(
                             IconButton(onClick = { isSearchActive = true }) {
                                 Icon(
                                     painter = painterResource(R.drawable.ic_search_24),
-                                    contentDescription = stringResource(R.string.accessibility_search)
+                                    contentDescription = stringResource(R.string.cd_settings_search)
                                 )
                             }
                         } else if (searchQuery.isNotEmpty()) {
@@ -194,7 +194,7 @@ fun SettingsScreen(
                             }) {
                                 Icon(
                                     painter = painterResource(R.drawable.ic_close_24),
-                                    contentDescription = stringResource(R.string.settings_search_clear)
+                                    contentDescription = stringResource(R.string.cd_settings_search_clear)
                                 )
                             }
                         }
@@ -220,7 +220,7 @@ fun SettingsScreen(
                     .graphicsLayer(
                         scaleX = oneHandedScale,
                         scaleY = oneHandedScale,
-                        transformOrigin = TransformOrigin(1f, 1f)
+                        transformOrigin = TransformOrigin(0.5f, 1f)
                     )
                     .padding(
                         top = innerPadding.calculateTopPadding(),
@@ -246,7 +246,7 @@ fun SettingsScreen(
                     if (searchQuery.isNotBlank()) {
                         if (searchResults.isEmpty()) {
                             Text(
-                                text = stringResource(R.string.settings_search_empty),
+                                text = stringResource(R.string.settings_search_empty_state),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(32.dp),

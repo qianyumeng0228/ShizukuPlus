@@ -14,8 +14,7 @@ object ShellBinderRequestHandler {
     /**
      * Handles a REQUEST_BINDER broadcast directly (auth-token fast path).
      * Extracts the callback binder from the intent extras and delivers the Shizuku binder to it.
-     * Not used by the notification consent flow — that path calls [deliverBinder] directly with
-     * a pre-taken binder from [PendingConsentStore].
+     * [BinderRequestReceiver] calls [deliverBinder] directly for the no-token (rish/shell) case.
      */
     fun handleRequest(context: Context, intent: Intent, requireAuth: Boolean = false): Boolean {
         if (intent.action != "rikka.shizuku.intent.action.REQUEST_BINDER" &&
@@ -42,10 +41,9 @@ object ShellBinderRequestHandler {
 
     /**
      * Delivers the Shizuku server binder to [callbackBinder] (the rish process's receiver).
-     * The callback binder is already resolved by the caller — either taken from
-     * [PendingConsentStore] (notification consent path) or extracted directly from intent extras
-     * (auth-token fast path). This avoids any store interaction and is safe to call even if the
-     * store entry was already consumed.
+     * Delivery itself is unconditional and makes no authorization decision — every privileged
+     * AIDL method is separately gated by [enforceCallingPermission], keyed off the real,
+     * kernel-verified uid of whatever transaction the caller makes once attached.
      */
     fun deliverBinder(context: Context, callbackBinder: IBinder): Boolean {
         val shizukuBinder = try {

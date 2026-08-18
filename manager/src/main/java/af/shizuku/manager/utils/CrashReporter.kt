@@ -76,10 +76,10 @@ object CrashReporter {
         sb.append("- **Watchdog Enabled:** ${ShizukuSettings.getWatchdog()}\n\n")
 
         // 6. Logs (Logcat tail)
-        sb.append("### Logs (Last 150 lines)\n")
+        sb.append("### Logs (Last 300 lines)\n")
         sb.append("```text\n")
         try {
-            val process = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-v", "time", "-t", "150", "*:S", "AndroidRuntime:E", "ShizukuManager:V", "ShizukuStateMachine:V", "ShizukuWatchdog:V"))
+            val process = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-v", "time", "-t", "300"))
             process.inputStream.bufferedReader().use { reader ->
                 reader.forEachLine { line ->
                     sb.append(line).append("\n")
@@ -116,7 +116,15 @@ object CrashReporter {
             parent.mkdirs()
         }
         if (parent == null || parent.exists()) {
-            file.writeText(report)
+            try {
+                file.writeText(report)
+            } catch (e: Exception) {
+                // cacheDir may be unwritable (full disk, storage mount race); don't crash
+                // the app while it's trying to report a crash.
+                return
+            }
+        } else {
+            return
         }
 
         val uri = androidx.core.content.FileProvider.getUriForFile(
