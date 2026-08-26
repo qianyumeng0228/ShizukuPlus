@@ -326,10 +326,12 @@ jobs:
             # (candidates: connectedDropinDebugAndroidTest, connectedShizukuplusDebugAndroidTest) -
             # target the Shizukuplus flavor, the standard build this workflow otherwise treats as
             # primary (see the Plus-vs-Drop-In asset selection in the release job below).
-            ./gradlew :manager:connectedShizukuplusDebugAndroidTest \
-              -Pandroid.testInstrumentationRunnerArguments.class=af.shizuku.manager.JniSmokeTest \
-              --stacktrace 2>&1 | tee smoke-test.log
+            set +e
+            ./gradlew :manager:connectedShizukuplusDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=af.shizuku.manager.JniSmokeTest --stacktrace > smoke-test.log 2>&1
+            gradle_status=$?
+            cat smoke-test.log
             grep -E "PASSED|FAILED|ERROR" smoke-test.log || true
+            exit $gradle_status
 
       - name: Upload smoke test results
         if: always()
