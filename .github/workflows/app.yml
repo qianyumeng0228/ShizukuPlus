@@ -322,8 +322,12 @@ jobs:
           script: |
             yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
             echo 'org.gradle.caching=true' >> gradle.properties
-            ./gradlew :manager:connectedShizukuplusDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=af.shizuku.manager.JniSmokeTest --stacktrace 2>&1 | tee smoke-test.log
+            set +e
+            ./gradlew :manager:connectedShizukuplusDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=af.shizuku.manager.JniSmokeTest --stacktrace > smoke-test.log 2>&1
+            gradle_status=$?
+            cat smoke-test.log
             grep -E "PASSED|FAILED|ERROR" smoke-test.log || true
+            exit $gradle_status
 
       - name: Upload smoke test results
         if: always()
