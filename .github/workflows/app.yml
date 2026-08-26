@@ -442,6 +442,12 @@ jobs:
           {
             echo "# ${TAG_NAME}"
             echo
+            echo "## 下载选择"
+            echo
+            echo "- 标准版：\`Shizuku+-${TAG_NAME}.apk\`，包名 \`af.shizuku.plus.api\`。推荐大多数用户下载，可与原版 Shizuku 并存。"
+            echo "- Drop-In 版：\`Shizuku+-Drop-In-${TAG_NAME}.apk\`，包名 \`moe.shizuku.privileged.api\`。用于替换原版 Shizuku，不能与原版 Shizuku 同时安装。"
+            echo "- Compat-Hub 兼容中心：\`Shizuku+-Compat-Hub-${TAG_NAME}.apk\`，包名同为 \`moe.shizuku.privileged.api\`。这是轻量兼容辅助包，用于让只检测原版 Shizuku 包名的第三方应用识别 Shizuku+；通常无需手动下载，标准版应用内有安装入口。"
+            echo
 
             if [ -n "$PREV_TAG" ]; then
               RANGE="${PREV_TAG}..HEAD"
@@ -552,5 +558,10 @@ jobs:
           # release as "stable" (#407).
           PRERELEASE_ARGS=()
           [ "$IS_PRERELEASE" = "true" ] && PRERELEASE_ARGS=(--prerelease)
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            RELEASE_TITLE="Shizuku+ 中文预发布版 ${VERSION}"
+          else
+            RELEASE_TITLE="Shizuku+ 中文汉化版 ${VERSION}"
+          fi
 
-          gh release create "$TAG_NAME" "${ASSETS[@]}" --title "$VERSION" --notes-file release_notes.md "${PRERELEASE_ARGS[@]}"
+          gh release create "$TAG_NAME" "${ASSETS[@]}" --title "$RELEASE_TITLE" --notes-file release_notes.md "${PRERELEASE_ARGS[@]}"
