@@ -40,28 +40,15 @@ class JniSmokeTest {
         System.loadLibrary("adb")
 
         try {
-            val outerClass = Class.forName("af.shizuku.manager.adb.AdbPairingClient")
-            val pairingContextClass =
-                outerClass.declaredClasses
-                    .firstOrNull { it.simpleName == "PairingContext" }
-            assertNotNull(
-                "PairingContext inner class not found — check AdbPairingClient structure",
-                pairingContextClass,
+            val pairingContextClass = Class.forName("af.shizuku.manager.adb.PairingContext")
+
+            val nativeMethod = pairingContextClass.getDeclaredMethod(
+                "nativeConstructor",
+                Boolean::class.javaPrimitiveType,
+                ByteArray::class.java,
             )
-
-            // Find nativeConstructor in PairingContext.Companion
-            val companionClass =
-                pairingContextClass!!
-                    .declaredClasses
-                    .firstOrNull { it.simpleName == "Companion" }
-            assertNotNull("PairingContext.Companion not found", companionClass)
-
-            val nativeMethod =
-                companionClass!!
-                    .declaredMethods
-                    .firstOrNull { it.name == "nativeConstructor" }
             assertNotNull(
-                "nativeConstructor not found in PairingContext.Companion — " +
+                "nativeConstructor not found in PairingContext - " +
                     "JNI method table may be mismatched",
                 nativeMethod,
             )
@@ -69,17 +56,12 @@ class JniSmokeTest {
             // Actually invoke the native method. If RegisterNatives mapped it to the
             // wrong JNI function, this will throw UnsatisfiedLinkError or crash.
             nativeMethod!!.isAccessible = true
-            val companionField =
-                pairingContextClass
-                    .getDeclaredField("Companion")
-                    .also { it.isAccessible = true }
-            val companionInstance = companionField.get(null)
 
             // Returns a native pointer (>0) on success, 0 on alloc failure.
             // Either way, reaching this line means the JNI call worked.
-            nativeMethod.invoke(companionInstance, true, "smoketest".toByteArray())
+            nativeMethod.invoke(null, true, "smoketest".toByteArray())
         } catch (e: UnsatisfiedLinkError) {
-            fail("nativeConstructor is not linked — RegisterNatives may have failed: ${e.message}")
+            fail("nativeConstructor is not linked - RegisterNatives may have failed: ${e.message}")
         }
     }
 }
