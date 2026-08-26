@@ -36,6 +36,7 @@ import af.shizuku.manager.databinding.SwipeHintOverlayBinding
 import timber.log.Timber
 import af.shizuku.manager.management.AppViewHolder.Callbacks
 import af.shizuku.manager.database.ActivityLogManager
+import af.shizuku.manager.utils.HapticUtils
 import af.shizuku.manager.utils.ShizukuStateMachine
 import rikka.lifecycle.Status
 import rikka.recyclerview.addEdgeSpacing
@@ -49,6 +50,8 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
     private lateinit var recyclerView: RecyclerView
     private var firstLoad = true
     private var backCallback: androidx.activity.OnBackPressedCallback? = null
+    private var swipeRightAction = "none"
+    private var swipeLeftAction = "none"
 
     private val stateListener: (ShizukuStateMachine.State) -> Unit = {
         if (ShizukuStateMachine.isDead() && !isFinishing) finish()
@@ -283,8 +286,8 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
     // ----- Swipe gestures -----
 
     private fun setupSwipe(rv: RecyclerView) {
-        val swipeRightAction = ShizukuSettings.getSwipeRightAction()
-        val swipeLeftAction = ShizukuSettings.getSwipeLeftAction()
+        swipeRightAction = ShizukuSettings.getSwipeRightAction()
+        swipeLeftAction = ShizukuSettings.getSwipeLeftAction()
 
         val cb = object : ItemTouchHelper.SimpleCallback(
             0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -307,7 +310,7 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
                 item ?: return
 
                 val action = if (direction == ItemTouchHelper.RIGHT) swipeRightAction else swipeLeftAction
-                handleSwipeAction(item, action)
+                handleSwipeAction(item, action, vh)
             }
 
             override fun onChildDraw(
@@ -325,13 +328,19 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
         ItemTouchHelper(cb).attachToRecyclerView(rv)
     }
 
-    private fun handleSwipeAction(item: PackageInfo, action: String) {
+    private fun handleSwipeAction(item: PackageInfo, action: String, vh: RecyclerView.ViewHolder) {
         val opts = ActivityOptions.makeCustomAnimation(
             this, android.R.anim.fade_in, android.R.anim.fade_out
         ).toBundle()
 
         val appLabel = item.applicationInfo?.loadLabel(packageManager)?.toString() ?: item.packageName
         ActivityLogManager.log(appLabel, item.packageName, "Swipe: $action")
+
+        if (action == "none") {
+            HapticUtils.error(vh.itemView)
+        } else {
+            HapticUtils.success(vh.itemView)
+        }
 
         when (action) {
             "open_app" -> {
@@ -476,6 +485,11 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
     override fun onResume() {
         super.onResume()
         viewModel.refresh()
+        // Re-read swipe settings: setupSwipe()'s callback closes over these fields, so a
+        // change made in Settings while this activity was backgrounded takes effect here
+        // without needing to rebuild the ItemTouchHelper.
+        swipeRightAction = ShizukuSettings.getSwipeRightAction()
+        swipeLeftAction = ShizukuSettings.getSwipeLeftAction()
     }
 }
 

@@ -1,10 +1,8 @@
 <div align="center">
 
-I recently moved development over to a new phone (S22U → S26U) — things are back up and running, but if anything feels slower than usual that's why.
+I've finished moving my development environment and am now on a new device! Goodbye S22 Ultra, Hello S26 Ultra!
 
-Please keep submitting issues you're experiencing, and feel free to open pull requests if you think you can help improve the codebase!
-
-I'm looking for contributors and collaborators to keep the vision alive and stabilize the project, so feel free to reach out.
+Please keep submitting issues you're experiencing, and feel free to open pull requests if you think you can help improve the codebase! I'm looking for contributors and collaborators to keep the vision alive and stabilize the project, so feel free to reach out!
 
 # Shizuku+
 

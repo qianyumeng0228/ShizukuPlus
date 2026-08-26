@@ -115,6 +115,13 @@
             android:dependency="expressive_animations"
             android:icon="@drawable/ic_bolt_24" />
 
+        <SwitchPreferenceCompat
+            android:key="haptic_feedback"
+            android:title="@string/settings_haptic_feedback"
+            android:summary="@string/settings_haptic_feedback_summary"
+            android:defaultValue="true"
+            android:icon="@drawable/ic_bolt_24" />
+
     </af.shizuku.manager.settings.CollapsiblePreferenceCategory>
 
     <af.shizuku.manager.settings.CollapsiblePreferenceCategory

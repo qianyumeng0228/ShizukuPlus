@@ -4,15 +4,17 @@
     android:viewportWidth="432"
     android:viewportHeight="432"
     android:tint="?attr/colorControlNormal">
-    <!-- Only the plus badge is exposed to Themed Icons (Android 13+ Material You
-         single-color re-tint). The cat and hexagon are intentionally omitted here:
-         the OS renders this monochrome layer as the *entire* icon when Themed
-         Icons is on, so this is as close as the platform allows to "just the
-         plus is themed" — a full-color cat+hexagon can't coexist with a
-         re-tinted glyph in the same themed-icon render. Position must stay in
-         sync with the plus in drawable/ic_launcher_foreground.xml (scaled 4x:
-         this viewport is 432 units for the same 108dp canvas). -->
+    <!-- Only the plus badge is exposed to Themed Icons (Android 13+ Material You single-color
+         re-tint) and notification-shade icons. A hand-drawn hexagon+cat reconstruction was tried
+         here and reverted - copied vector coordinates don't match the real (raster) cat+hexagon
+         art in mipmap/ic_launcher_background.png / ic_launcher_foreground_base.png, which this
+         vector layer can't reuse, so it rendered as a misaligned mess of lines instead of the
+         icon. The OS re-tints this whole layer to one flat color regardless, so a full-color
+         cat+hexagon couldn't have been shown correctly here anyway - this is as close as the
+         platform allows to "just the plus is themed." Position must stay in sync with the plus
+         in drawable/ic_launcher_foreground.xml (scaled 4x: this viewport is 432 units for the
+         same 108dp canvas). -->
     <path
         android:fillColor="@android:color/white"
-        android:pathData="M 239.63,110.53 h 10.13 v 15.19 h 15.19 v 10.13 h -15.19 v 15.19 h -10.13 v -15.19 h -15.19 v -10.13 h 15.19 z" />
+        android:pathData="M 277.88,141.50 h 14.25 v 21.38 h 21.38 v 14.25 h -21.38 v 21.38 h -14.25 v -21.38 h -21.38 v -14.25 h 21.38 z" />
 </vector>

@@ -257,25 +257,28 @@ open class HomeActivity : AppActivity(), MavericksView {
                 adapter.updateData()
                 ShizukuSettings.setLastLaunchMode(if (status.uid == 0) ShizukuSettings.LaunchMethod.ROOT else ShizukuSettings.LaunchMethod.ADB)
 
-                if (status.isRunning && previouslyRunning == false && ShizukuSettings.isExpressiveAnimationsEnabled()) {
+                if (status.isRunning && previouslyRunning == false) {
                     recyclerView.post {
                         val view = recyclerView
                         if (!view.isAttachedToWindow) return@post
-                        val statusCard = view.findViewHolderForAdapterPosition(0)?.itemView
-                        val cx = view.width / 2
-                        val cy = statusCard?.let { it.top + it.height / 2 } ?: 100
-                        val finalRadius = Math.hypot(view.width.toDouble(), view.height.toDouble()).toFloat()
 
-                        // OneUI 8+ uses more "elastic" easing (0.22, 1, 0.36, 1)
-                        val interpolator = if (EnvironmentUtils.isOneUi8())
-                            androidx.core.view.animation.PathInterpolatorCompat.create(0.22f, 1f, 0.36f, 1f)
-                        else
-                            androidx.core.view.animation.PathInterpolatorCompat.create(0.2f, 0f, 0f, 1f)
+                        if (ShizukuSettings.isExpressiveAnimationsEnabled()) {
+                            val statusCard = view.findViewHolderForAdapterPosition(0)?.itemView
+                            val cx = view.width / 2
+                            val cy = statusCard?.let { it.top + it.height / 2 } ?: 100
+                            val finalRadius = Math.hypot(view.width.toDouble(), view.height.toDouble()).toFloat()
 
-                        android.view.ViewAnimationUtils.createCircularReveal(view, cx, cy, 0f, finalRadius).apply {
-                            duration = ShizukuSettings.scaledAnimationDuration(if (EnvironmentUtils.isOneUi8()) 800L else 600L)
-                            this.interpolator = interpolator
-                            start()
+                            // OneUI 8+ uses more "elastic" easing (0.22, 1, 0.36, 1)
+                            val interpolator = if (EnvironmentUtils.isOneUi8())
+                                androidx.core.view.animation.PathInterpolatorCompat.create(0.22f, 1f, 0.36f, 1f)
+                            else
+                                androidx.core.view.animation.PathInterpolatorCompat.create(0.2f, 0f, 0f, 1f)
+
+                            android.view.ViewAnimationUtils.createCircularReveal(view, cx, cy, 0f, finalRadius).apply {
+                                duration = ShizukuSettings.scaledAnimationDuration(if (EnvironmentUtils.isOneUi8()) 800L else 600L)
+                                this.interpolator = interpolator
+                                start()
+                            }
                         }
 
                         if (EnvironmentUtils.isOneUi8()) {
@@ -395,9 +398,7 @@ open class HomeActivity : AppActivity(), MavericksView {
                     override fun onMove(rv: RecyclerView, src: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
                 if (!adapter.isDraggable(target.adapterPosition)) return false
                 adapter.moveItem(src.adapterPosition, target.adapterPosition)
-                if (ShizukuSettings.isExpressiveAnimationsEnabled()) {
-                    HapticUtils.tap(target.itemView)
-                }
+                HapticUtils.tap(target.itemView)
                 return true
             }
 
@@ -405,8 +406,8 @@ open class HomeActivity : AppActivity(), MavericksView {
                 super.onSelectedChanged(viewHolder, actionState)
                 if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
                     adapter.isDragging = true
+                    viewHolder?.itemView?.let { HapticUtils.gestureStart(it) }
                     if (ShizukuSettings.isExpressiveAnimationsEnabled()) {
-                        viewHolder?.itemView?.let { HapticUtils.gestureStart(it) }
                         viewHolder?.itemView?.animate()
                             ?.scaleX(1.04f)
                             ?.scaleY(1.04f)
@@ -455,16 +456,16 @@ open class HomeActivity : AppActivity(), MavericksView {
             private var backThresholdReached = false
 
             override fun handleOnBackProgressed(backEvent: androidx.activity.BackEventCompat) {
+                val progress = backEvent.progress
+
+                if (progress > 0.1f && !backThresholdReached) {
+                    backThresholdReached = true
+                    HapticUtils.gestureThreshold(recyclerView)
+                } else if (progress < 0.1f) {
+                    backThresholdReached = false
+                }
+
                 if (ShizukuSettings.isExpressiveAnimationsEnabled()) {
-                    val progress = backEvent.progress
-
-                    if (progress > 0.1f && !backThresholdReached) {
-                        backThresholdReached = true
-                        HapticUtils.gestureThreshold(recyclerView)
-                    } else if (progress < 0.1f) {
-                        backThresholdReached = false
-                    }
-
                     // Subtle parabolic scale and alpha for more "physical" feel
                     val scale = 1f - (0.08f * progress * progress)
                     recyclerView.scaleX = scale

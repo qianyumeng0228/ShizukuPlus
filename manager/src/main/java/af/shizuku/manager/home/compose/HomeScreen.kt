@@ -87,7 +87,14 @@ fun HomeScreen(
         val isOneHanded = ShizukuSettings.isOneHandedModeEnabled()
         val scale by animateFloatAsState(
             targetValue = if (isOneHanded) 0.75f else 1f,
-            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+            animationSpec = if (!ShizukuSettings.isExpressiveAnimationsEnabled()) {
+                snap()
+            } else {
+                spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium * ShizukuSettings.getAnimationDurationScale()
+                )
+            },
             label = "oneHandedScale"
         )
         val adjustedPadding = PaddingValues(
@@ -127,10 +134,13 @@ fun HomeScreen(
 
 @Composable
 fun AnimatedGradientBackground(content: @Composable () -> Unit) {
+    val animationsEnabled = ShizukuSettings.isExpressiveAnimationsEnabled()
     val infiniteTransition = rememberInfiniteTransition()
     val alpha by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 1f,
+        // Clamp to a static value when expressive animations are disabled, matching every
+        // other animated element in the app and avoiding a perpetual recomposition/battery cost.
+        targetValue = if (animationsEnabled) 1f else 0f,
         animationSpec = infiniteRepeatable(
             animation = tween(15000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
@@ -157,10 +167,13 @@ fun AnimatedGradientBackground(content: @Composable () -> Unit) {
 
 @Composable
 fun HomeEmptyState(onRestoreHomeCards: () -> Unit) {
+    val animationsEnabled = ShizukuSettings.isExpressiveAnimationsEnabled()
     val infiniteTransition = rememberInfiniteTransition()
     val floatAnim by infiniteTransition.animateFloat(
         initialValue = -8f,
-        targetValue = 8f,
+        // Clamp to a static value when expressive animations are disabled, matching every
+        // other animated element in the app and avoiding a perpetual recomposition/battery cost.
+        targetValue = if (animationsEnabled) 8f else -8f,
         animationSpec = infiniteRepeatable(
             animation = tween(2500, easing = EaseInOutSine),
             repeatMode = RepeatMode.Reverse
