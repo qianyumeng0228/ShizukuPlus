@@ -307,7 +307,7 @@
     <string name="plus_dashboard_title"><![CDATA[Shizuku+ 控制面板]]></string>
     <string name="error_unknown"><![CDATA[未知错误]]></string>
     <string name="translation_contributors"><![CDATA[thejaustin]]></string>
-    <string name="translation_url"><![CDATA[https://github.com/thejaustin/ShizukuPlus]]></string>
+    <string name="translation_url"><![CDATA[https://github.com/qianyumeng0228/ShizukuPlus]]></string>
     <string name="settings_expressive_title"><![CDATA[表现力设计（M3E）]]></string>
     <string name="settings_expressive_shapes"><![CDATA[表现力图标形状]]></string>
     <string name="settings_expressive_shapes_summary"><![CDATA[使用不对称的叶片和水滴形状作为图标]]></string>
@@ -762,10 +762,10 @@
     <string name="settings_auto_install_summary"><![CDATA[自动下载并提示安装更新（需要权限）]]></string>
     <string name="settings_update_channel_category"><![CDATA[发布渠道]]></string>
     <string name="settings_update_channel_title"><![CDATA[更新频道]]></string>
-    <string name="update_channel_stable"><![CDATA[稳定的]]></string>
-    <string name="update_channel_dev"><![CDATA[开发/预发布]]></string>
+    <string name="update_channel_stable"><![CDATA[稳定版]]></string>
+    <string name="update_channel_dev"><![CDATA[开发/预发布版本]]></string>
     <string name="update_channel_dev_warning_title"><![CDATA[切换到开发频道？]]></string>
-    <string name="update_channel_dev_warning_message"><![CDATA[开发版本是根据最新提交构建的，可能包含错误、崩溃或重大更改。仅当您想尽早测试新功能时才使用此选项。\n\n您可以随时切换回稳定版。]]></string>
+    <string name="update_channel_dev_warning_message"><![CDATA[开发/预发布版本来自 qianyumeng0228/ShizukuPlus，可能包含错误、崩溃或破坏性更改。仅当您想提前测试新功能时才使用此选项。\n\n您可以随时切换回稳定版。]]></string>
     <string name="settings_update_manual_category"><![CDATA[手动更新]]></string>
     <string name="settings_check_for_update_title"><![CDATA[检查更新]]></string>
     <string name="settings_check_for_update_summary"><![CDATA[手动检查是否有新版本可用]]></string>
@@ -794,6 +794,7 @@
     <string name="migration_failure_message"><![CDATA[无法读取旧版本的设置。您可能需要手动重新配置您的首选项。\n\n您仍然可以安全地卸载旧版本。]]></string>
     <string name="migration_no_root_message"><![CDATA[Root 权限不可用，因此无法自动迁移设置。您需要手动重新配置偏好设置。\n\n准备好后可以卸载旧版本。]]></string>
     <string name="update_available_title"><![CDATA[可用更新]]></string>
+    <string name="update_prerelease_badge"><![CDATA[预发布版本]]></string>
     <string name="update_available_message"><![CDATA[新版本%1$s可供下载。]]></string>
     <string name="update_download"><![CDATA[下载]]></string>
     <string name="update_later"><![CDATA[之后]]></string>

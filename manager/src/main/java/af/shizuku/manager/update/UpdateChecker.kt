@@ -12,6 +12,7 @@ import java.net.UnknownHostException
 import javax.net.ssl.SSLException
 import kotlinx.coroutines.withContext
 import af.shizuku.manager.BuildConfig
+import af.shizuku.manager.utils.ProjectLinks
 import org.json.JSONArray
 import org.json.JSONObject
 import org.xmlpull.v1.XmlPullParser
@@ -25,11 +26,11 @@ import java.util.TimeZone
 object UpdateChecker {
 
     private const val TAG = "UpdateChecker"
-    private const val RELEASES_URL = "https://api.github.com/repos/thejaustin/ShizukuPlus/releases"
+    private const val RELEASES_URL = ProjectLinks.API_RELEASES
     private const val LATEST_URL = "$RELEASES_URL/latest"
     // Fallback: GitHub's Atom feed is served from github.com CDN — different IP range
     // than api.github.com, so routing issues specific to that host don't affect it.
-    private const val ATOM_URL = "https://github.com/thejaustin/ShizukuPlus/releases.atom"
+    private const val ATOM_URL = ProjectLinks.RELEASES_ATOM
     private const val CONNECT_TIMEOUT_MS = 5_000
     private const val READ_TIMEOUT_MS = 8_000
     private const val RETRY_DELAY_MS = 2_000L

@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import af.shizuku.manager.database.AppContextManager
+import af.shizuku.manager.utils.ProjectLinks
 import androidx.preference.TwoStatePreference
 
 class AdvancedSettingsFragment : BaseSettingsFragment() {
@@ -34,7 +35,7 @@ class AdvancedSettingsFragment : BaseSettingsFragment() {
         findPreference<Preference>("update_app_database")?.setOnPreferenceClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val url = java.net.URL("https://raw.githubusercontent.com/thejaustin/ShizukuPlus/master/database/apps.json")
+                    val url = java.net.URL(ProjectLinks.APPS_DB)
                     val connection = url.openConnection() as java.net.HttpURLConnection
                     val content = try {
                         connection.instanceFollowRedirects = true

@@ -9,7 +9,7 @@
 
     <!-- To translators: you can leave your here -->
     <string name="translation_contributors">thejaustin</string>
-    <string name="translation_url">https://github.com/thejaustin/ShizukuPlus</string>
+    <string name="translation_url">https://github.com/qianyumeng0228/ShizukuPlus</string>
 
     <!-- UI Settings - Expressive -->
     <string name="settings_expressive_title">Expressive Design (M3E)</string>
@@ -854,9 +854,9 @@
     <string name="settings_update_channel_category">Release Channel</string>
     <string name="settings_update_channel_title">Update channel</string>
     <string name="update_channel_stable">Stable</string>
-    <string name="update_channel_dev">Dev / Pre-release</string>
+    <string name="update_channel_dev">Development / Pre-release</string>
     <string name="update_channel_dev_warning_title">Switch to Dev channel?</string>
-    <string name="update_channel_dev_warning_message">Dev releases are built from the latest commits and may contain bugs, crashes, or breaking changes. Only use this if you want to test new features early.\n\nYou can switch back to Stable at any time.</string>
+    <string name="update_channel_dev_warning_message">Development and pre-release builds from qianyumeng0228/ShizukuPlus may contain bugs, crashes, or breaking changes. Only use this if you want to test new features early.\n\nYou can switch back to Stable at any time.</string>
     <string name="settings_update_manual_category">Manual Update</string>
     <string name="settings_check_for_update_title">Check for update</string>
     <string name="settings_check_for_update_summary">Manually check if a new version is available</string>
@@ -894,6 +894,7 @@
 
     <!-- Update Dialogs -->
     <string name="update_available_title">Update Available</string>
+    <string name="update_prerelease_badge">Pre-release</string>
     <string name="update_available_message">A new version %1$s is available for download.</string>
     <string name="update_download">Download</string>
     <string name="update_later">Later</string>
