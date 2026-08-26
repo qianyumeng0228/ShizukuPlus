@@ -85,8 +85,8 @@ jobs:
       KEYSTORE: ${{ secrets.KEYSTORE }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      IS_DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug == true }}
-      IS_PRERELEASE: ${{ (github.event_name == 'push' && github.ref_name == 'master') || (github.event_name == 'workflow_dispatch' && github.event.inputs.prerelease == true) }}
+      IS_DEBUG: ${{ github.event_name == 'workflow_dispatch' && inputs.debug == true }}
+      IS_PRERELEASE: ${{ (github.event_name == 'push' && github.ref_name == 'master') || (github.event_name == 'workflow_dispatch' && inputs.prerelease == true) }}
 
     outputs:
       artifactName: ${{ steps.buildWithGradle.outputs.artifactName }}
@@ -336,13 +336,13 @@ jobs:
 
   release:
     needs: [build, lint]
-    if: ${{ !failure() && !cancelled() && ((github.event_name == 'push' && github.ref_name == 'master') || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug != true)) }}
+    if: ${{ !failure() && !cancelled() && ((github.event_name == 'push' && github.ref_name == 'master') || (github.event_name == 'workflow_dispatch' && inputs.debug != true)) }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     env:
-      IS_PRERELEASE: ${{ (github.event_name == 'push' && github.ref_name == 'master') || (github.event_name == 'workflow_dispatch' && github.event.inputs.prerelease == true) }}
+      IS_PRERELEASE: ${{ (github.event_name == 'push' && github.ref_name == 'master') || (github.event_name == 'workflow_dispatch' && inputs.prerelease == true) }}
 
     steps:
       - name: Checkout
