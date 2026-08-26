@@ -349,7 +349,7 @@
     <string name="doctor_tip_secure_folder"><![CDATA[<b>检测到安全文件夹</b>：Shizuku 在主用户（所有者）中运行效果最佳。在安全文件夹或工作资料中运行时，可能需要先从主用户启动服务。]]></string>
     <string name="doctor_tip_phantom_process"><![CDATA[<b>幻影进程限制</b>：如果运行的命令过多，Android 12-15+ 可能会终止 Shizuku。“修复”按钮会尝试关闭此限制。]]></string>
     <string name="doctor_tip_samsung_optimization"><![CDATA[<b>三星自动优化</b>：请在“设备维护”中禁用“自动重启”，防止 Shizuku 在夜间被终止。]]></string>
-    <string name="doctor_tip_samsung_sleeping"><![CDATA[<b>三星休眠应用</b>：请在“设备维护 &gt; 电池 &gt; 后台使用限制”中，将 Shizuku+ 添加到<b>“永不休眠的应用”</b>列表，防止后台服务被终止。]]></string>
+    <string name="doctor_tip_samsung_sleeping"><![CDATA[<b>三星休眠应用</b>：点按“修复”会直接打开<b>“永不休眠的应用”</b>列表。请点按<b>+</b>按钮并添加 Shizuku+，防止三星冻结后台服务。]]></string>
     <string name="doctor_tip_s22_ultra_exynos"><![CDATA[<b>S22 Ultra（Exynos）</b>：如果服务响应缓慢，请尝试在“设备维护”&gt;“内存”中禁用<b>“内存加速”</b>。]]></string>
     <string name="doctor_tip_s22_ultra_snapdragon"><![CDATA[<b>S22 Ultra（骁龙）</b>：请确保在“快速设置”中启用“增强处理”，以获得更高的命令吞吐量。]]></string>
     <string name="doctor_system_well_configured"><![CDATA[您的系统似乎已为 Shizuku+ 配置良好。]]></string>
