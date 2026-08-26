@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@mipmap/ic_launcher_foreground_base" />
-    <!-- Plus badge center/bounds must stay inside the adaptive-icon safe zone (a 66dp circle
-         centered in this 108dp canvas, i.e. roughly 21-87 on both axes) - some OEM launchers'
-         mask/notification-icon compositors crop hard outside it. An earlier position matching
-         the original flat (non-adaptive) upload pixel-for-pixel put the plus almost entirely
-         outside that circle, so it rendered as a barely-visible sliver on real devices (Samsung
-         One UI notification icon) despite looking correct in an unmasked composite preview.
-         Re-verify any reposition against an actual circular-mask render, not just a flat
-         composite. -->
+    <!-- The cat+hexagon art below (ic_launcher_foreground_base / ic_launcher_background) is
+         upstream RikkaApps/Shizuku's original artwork, unmodified - the only intentional
+         difference from upstream's icon is this plus badge. Position was measured directly from
+         upstream's ic_launcher_background.png (hexagon bounding box x:134-311, y:145-303 in its
+         native 432-unit/4x scale, i.e. 33.5-77.75, 36.25-75.75 at this file's 108-unit scale):
+         placed over the hexagon's upper-right shoulder, center (71.25, 42.5), radius ~21dp from
+         canvas center (54,54) - inside the 66dp/33dp-radius adaptive-icon safe zone that OEM
+         launcher/notification-icon compositors crop to. -->
     <item>
         <vector
             android:width="108dp"
@@ -17,7 +17,7 @@
             android:viewportHeight="108">
             <path
                 android:fillColor="#B3FFFFFF"
-                android:pathData="M 59.90,27.64 h 2.53 v 3.80 h 3.80 v 2.53 h -3.80 v 3.80 h -2.53 v -3.80 h -3.80 v -2.53 h 3.80 z" />
+                android:pathData="M 69.47,35.38 h 3.56 v 5.34 h 5.34 v 3.56 h -5.34 v 5.34 h -3.56 v -5.34 h -5.34 v -3.56 h 5.34 z" />
         </vector>
     </item>
 </layer-list>

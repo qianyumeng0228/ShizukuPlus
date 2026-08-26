@@ -17,6 +17,8 @@
     <string name="settings_expressive_shapes_summary">Use asymmetrical leaf and droplet shapes for icons</string>
     <string name="settings_expressive_animations">Elastic Animations</string>
     <string name="settings_expressive_animations_summary">Enable M3 elastic predictive back and drag scaling</string>
+    <string name="settings_haptic_feedback">Haptic Feedback</string>
+    <string name="settings_haptic_feedback_summary">Vibrate on taps and gestures</string>
     <string name="settings_icon_style">Icon Style</string>
     <string name="settings_icon_style_summary">Choose the visual style for system icons</string>
     <string name="settings_shape_style">Container Shape Style</string>
@@ -679,8 +681,8 @@
     <string name="dialog_stop_message">Shizuku service will be stopped.</string>
 
     <!-- Notification -->
-    <string name="notification_channel_automation">Automation service</string>
-    <string name="notification_automation_title">Automation running</string>
+    <string name="notification_channel_automation">Network monitor</string>
+    <string name="notification_automation_title">Watching for known networks to auto-start Shizuku+</string>
     <string name="notification_channel_service_status">Service start status</string>
     <string name="notification_service_starting">Shizuku service is starting…</string>
     <string name="notification_service_start_failed">Start Shizuku service failed.</string>
@@ -740,6 +742,7 @@
     <!-- Misc -->
     <string name="dialog_cannot_open_browser_title">Can\'t start browser</string>
     <string name="toast_copied_to_clipboard">Copied to clipboard</string>
+    <string name="accessibility_service_label">Shizuku+ Pairing Helper</string>
     <string name="accessibility_service_description">Provides pairing support for devices (e.g., TVs and Samsung One UI phones) where notifications or split screen cannot be used easily.\n\nEnables Shizuku+ to extract the pairing code from the wireless debugging pairing screen. It will disable itself once the pairing code is found.</string>
 
     <!-- Messages for legacy -->

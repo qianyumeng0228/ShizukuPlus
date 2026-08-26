@@ -4,7 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -62,7 +64,14 @@ fun SettingsScreen(
     // Samsung OneUI one-handed mode: scale entire settings panel to 75%, anchored to bottom-right.
     val oneHandedScale by animateFloatAsState(
         targetValue = if (isOneHanded) 0.75f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+        animationSpec = if (!af.shizuku.manager.ShizukuSettings.isExpressiveAnimationsEnabled()) {
+            snap()
+        } else {
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMedium * af.shizuku.manager.ShizukuSettings.getAnimationDurationScale()
+            )
+        },
         label = "settingsOneHandedScale"
     )
 
@@ -210,10 +219,11 @@ fun SettingsScreen(
             )
 
             // Search Overlay
+            val searchFadeMs = af.shizuku.manager.ShizukuSettings.scaledAnimationDuration(300L).toInt()
             AnimatedVisibility(
                 visible = isSearchActive,
-                enter = fadeIn(),
-                exit = fadeOut(),
+                enter = fadeIn(tween(searchFadeMs)),
+                exit = fadeOut(tween(searchFadeMs)),
                 modifier = Modifier.fillMaxSize()
             ) {
                 Box(

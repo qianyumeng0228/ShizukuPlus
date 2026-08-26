@@ -126,6 +126,7 @@ public class ShizukuSettings {
         public static final String KEY_EXPRESSIVE_SHAPES = "expressive_shapes";
         public static final String KEY_SENTRY_LIMIT_REACHED = "sentry_limit_reached";
         public static final String KEY_EXPRESSIVE_ANIMATIONS = "expressive_animations";
+        public static final String KEY_HAPTIC_FEEDBACK = "haptic_feedback";
         public static final String KEY_ICON_STYLE = "icon_style";
         public static final String KEY_ICON_COLOR_MODE = "icon_color_mode";
         public static final String KEY_SHAPE_STYLE = "shape_style";
@@ -213,6 +214,10 @@ public class ShizukuSettings {
 
     public static boolean isExpressiveAnimationsEnabled() {
         return getPreferences().getBoolean(Keys.KEY_EXPRESSIVE_ANIMATIONS, true);
+    }
+
+    public static boolean isHapticFeedbackEnabled() {
+        return getPreferences().getBoolean(Keys.KEY_HAPTIC_FEEDBACK, true);
     }
 
     public static String getIconStyle() {

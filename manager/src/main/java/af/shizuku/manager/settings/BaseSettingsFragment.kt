@@ -54,7 +54,31 @@ abstract class BaseSettingsFragment : PreferenceFragmentCompat() {
 
         onCreateSettingsPreferences(savedInstanceState, rootKey)
 
-        preferenceScreen?.let { IconStyleHelper.applyToTree(requireContext(), it) }
+        preferenceScreen?.let {
+            IconStyleHelper.applyToTree(requireContext(), it)
+            fixDeprecatedListPreferenceSummaries(it)
+        }
+    }
+
+    /**
+     * `android:summary="%s"` on a ListPreference (used throughout the settings XML to show the
+     * selected entry's label as the summary) logs "Setting a summary with a String formatting
+     * marker is no longer supported" on every bind - AndroidX deprecated the format-string
+     * summary in favor of ListPreference.SimpleSummaryProvider, which renders identically.
+     * Walking the tree here fixes every occurrence at once instead of touching each preference's
+     * binding code individually.
+     */
+    private fun fixDeprecatedListPreferenceSummaries(group: androidx.preference.PreferenceGroup) {
+        for (i in 0 until group.preferenceCount) {
+            when (val pref = group.getPreference(i)) {
+                is androidx.preference.ListPreference -> {
+                    if (pref.summary == "%s") {
+                        pref.summaryProvider = androidx.preference.ListPreference.SimpleSummaryProvider.getInstance()
+                    }
+                }
+                is androidx.preference.PreferenceGroup -> fixDeprecatedListPreferenceSummaries(pref)
+            }
+        }
     }
 
     abstract fun onCreateSettingsPreferences(savedInstanceState: Bundle?, rootKey: String?)

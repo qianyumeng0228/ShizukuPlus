@@ -1,11 +1,10 @@
 package af.shizuku.manager.starter
 
 import android.app.Application
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.HapticFeedbackConstants
 import android.view.View
+import af.shizuku.manager.utils.HapticUtils
 import timber.log.Timber
 import androidx.activity.viewModels
 import androidx.lifecycle.AndroidViewModel
@@ -74,9 +73,7 @@ class StarterActivity : AppBarActivity() {
         viewModel.output.observe(this) { result ->
             val output = result.data?.trim() ?: return@observe
             if (output.endsWith(Starter.serviceStartedMessage)) {
-                val haptic = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-                    HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.VIRTUAL_KEY
-                binding.root.performHapticFeedback(haptic)
+                HapticUtils.success(binding.root)
                 if (!isFinishing) finish()
             } else if (result.status == Status.ERROR) {
                 if (isFinishing || isDestroyed) return@observe

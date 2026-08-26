@@ -40,6 +40,7 @@ import af.shizuku.manager.starter.Starter
 import af.shizuku.manager.starter.StarterActivity
 import af.shizuku.manager.utils.CustomTabsHelper
 import af.shizuku.manager.utils.EnvironmentUtils
+import af.shizuku.manager.utils.HapticUtils
 import af.shizuku.manager.utils.ShizukuStateMachine
 import rikka.core.util.ClipboardUtils
 
@@ -279,47 +280,54 @@ class OnboardingActivity : AppActivity() {
         private fun bindLongPressPage(binding: PageOnboardingLongpressBinding) {
             binding.switchOpenApp.apply {
                 isChecked = ShizukuSettings.getLongPressOpenApp()
-                setOnCheckedChangeListener { _, checked ->
+                setOnCheckedChangeListener { view, checked ->
+                    HapticUtils.tick(view)
                     ShizukuSettings.getPreferences()
                         ?.edit()?.putBoolean(ShizukuSettings.Keys.KEY_LP_OPEN_APP, checked)?.apply()
                 }
             }
             binding.switchAppInfo.apply {
                 isChecked = ShizukuSettings.getLongPressAppInfo()
-                setOnCheckedChangeListener { _, checked ->
+                setOnCheckedChangeListener { view, checked ->
+                    HapticUtils.tick(view)
                     ShizukuSettings.getPreferences()
                         ?.edit()?.putBoolean(ShizukuSettings.Keys.KEY_LP_APP_INFO, checked)?.apply()
                 }
             }
             binding.switchTogglePermission.apply {
                 isChecked = ShizukuSettings.getLongPressTogglePermission()
-                setOnCheckedChangeListener { _, checked ->
+                setOnCheckedChangeListener { view, checked ->
+                    HapticUtils.tick(view)
                     ShizukuSettings.getPreferences()
                         ?.edit()?.putBoolean(ShizukuSettings.Keys.KEY_LP_TOGGLE_PERMISSION, checked)?.apply()
                 }
             }
             binding.switchHideFromList.apply {
                 isChecked = ShizukuSettings.getLongPressHideFromList()
-                setOnCheckedChangeListener { _, checked ->
+                setOnCheckedChangeListener { view, checked ->
+                    HapticUtils.tick(view)
                     ShizukuSettings.getPreferences()
                         ?.edit()?.putBoolean(ShizukuSettings.Keys.KEY_LP_HIDE_FROM_LIST, checked)?.apply()
                 }
             }
             binding.switchDhizuku.apply {
                 isChecked = ShizukuSettings.isDhizukuModeEnabled()
-                setOnCheckedChangeListener { _, checked ->
+                setOnCheckedChangeListener { view, checked ->
+                    HapticUtils.tick(view)
                     ShizukuSettings.setDhizukuModeEnabled(checked)
                 }
             }
             binding.switchEnhancedApi.apply {
                 isChecked = ShizukuSettings.isCustomApiEnabled()
-                setOnCheckedChangeListener { _, checked ->
+                setOnCheckedChangeListener { view, checked ->
+                    HapticUtils.tick(view)
                     ShizukuSettings.setCustomApiEnabled(checked)
                 }
             }
             binding.switchThemedIcon.apply {
                 isChecked = ShizukuSettings.isThemedIconWanted()
-                setOnCheckedChangeListener { _, checked ->
+                setOnCheckedChangeListener { view, checked ->
+                    HapticUtils.tick(view)
                     ShizukuSettings.setThemedIconWanted(checked)
                 }
             }
