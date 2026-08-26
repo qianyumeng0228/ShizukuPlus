@@ -16,4 +16,7 @@
     <string name="compat_hub_installing">正在安装…</string>
     <string name="compat_hub_install_success">兼容中心已成功安装！</string>
     <string name="compat_hub_install_fail">安装失败。请确认 Shizuku+ 或 Root 已激活。</string>
+    <string name="compat_hub_install_signature_conflict">无法安装：已有另一个应用（例如原版 Shizuku）以 moe.shizuku.privileged.api 安装，且签名不兼容。请先卸载它。</string>
+    <string name="compat_hub_install_fail_storage">无法安装：设备可用存储空间不足。</string>
+    <string name="compat_hub_install_fail_abi">无法安装：兼容中心不支持此设备的 CPU 架构。</string>
 </resources>

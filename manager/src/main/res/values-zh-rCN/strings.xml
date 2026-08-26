@@ -927,6 +927,16 @@
     <string name="automation_plugin_condition_title"><![CDATA[Shizuku+ 服务运行状态]]></string>
     <string name="automation_plugin_condition_description"><![CDATA[只要 Shizuku+ 服务运行，就会满足此条件。]]></string>
     <string name="automation_plugin_condition_blurb"><![CDATA[Shizuku+ 服务正在运行]]></string>
+    <string name="settings_themed_icon"><![CDATA[主题图标]]></string>
+    <string name="settings_themed_icon_summary"><![CDATA[当启动器支持主题图标时，使用 Material You 着色的 Shizuku+ 图标。]]></string>
+    <string name="settings_themed_icon_open_settings"><![CDATA[打开图标设置]]></string>
+    <string name="update_download_failed_storage"><![CDATA[可用存储空间不足，无法下载更新。]]></string>
+    <string name="update_download_failed_cannot_resume"><![CDATA[下载中断后无法继续。请重试。]]></string>
+    <string name="update_download_failed_http"><![CDATA[网络错误中断了下载。请检查连接后重试。]]></string>
+    <string name="cd_navigate_back"><![CDATA[返回]]></string>
+    <string name="cd_settings_search"><![CDATA[搜索]]></string>
+    <string name="cd_settings_search_clear"><![CDATA[清除]]></string>
+    <string name="settings_search_empty_state"><![CDATA[未找到设置]]></string>
 
     <plurals name="settings_shadow_binder_hidden_packages_count">
         <item quantity="one"><![CDATA[已选择 %d 个应用]]></item>
