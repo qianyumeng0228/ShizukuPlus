@@ -52,17 +52,16 @@ class BugReportDialog : DialogFragment() {
                 CustomTabsHelper.launchUrlOrCopy(context, ProjectLinks.NEW_ISSUE)
             }
             .setNegativeButton(R.string.bug_report_dialog_button_email) { _, _ ->
-                val plainBody = """
-                    Please describe the bug. Include steps to reproduce if possible, as well as any relevant images/logs.
-
-                    Device: ${Build.MANUFACTURER} ${Build.MODEL}
-                    Android Version: ${Build.VERSION.RELEASE}
-                    Shizuku Version: ${BuildConfig.VERSION_NAME}
-                """.trimIndent()
+                val plainBody = getString(
+                    R.string.bug_report_email_body,
+                    "${Build.MANUFACTURER} ${Build.MODEL}",
+                    Build.VERSION.RELEASE,
+                    BuildConfig.VERSION_NAME
+                )
 
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse(
                     "mailto:" + context.getString(R.string.support_email) +
-                    "?subject=" + Uri.encode("[ISSUE TITLE]") +
+                    "?subject=" + Uri.encode(getString(R.string.bug_report_email_subject)) +
                     "&body=" + Uri.encode(plainBody)
                 ))
                 try {

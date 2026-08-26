@@ -605,6 +605,8 @@
     <string name="bug_report_dialog_method">Please submit an issue on %1$s if you have an account.</string>
     <string name="bug_report_dialog_method_2">Otherwise, you can send an email.</string>
     <string name="bug_report_dialog_button_email">Email</string>
+    <string name="bug_report_email_subject">问题标题</string>
+    <string name="bug_report_email_body">请描述该问题（Bug）。如果可能，请包含复现步骤，以及任何相关的截图或日志。\n\n设备：%1$s\n\nAndroid 版本：%2$s\n\nShizuku 版本：%3$s</string>
 
     <!-- Service Doctor -->
     <string name="home_service_doctor_title">Service Doctor</string>
