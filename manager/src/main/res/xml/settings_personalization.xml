@@ -49,6 +49,15 @@
             android:dependency="oneui_theme_enabled"
             android:icon="@drawable/ic_settings_suggest_24" />
 
+        <rikka.preference.SimpleMenuPreference
+            android:key="wallpaper_theme"
+            android:title="@string/settings_wallpaper"
+            android:summary="%s"
+            android:defaultValue="white_miku"
+            android:entries="@array/wallpaper_themes"
+            android:entryValues="@array/wallpaper_themes_value"
+            android:icon="@drawable/ic_wallpaper_24" />
+
     </af.shizuku.manager.settings.CollapsiblePreferenceCategory>
 
     <af.shizuku.manager.settings.CollapsiblePreferenceCategory

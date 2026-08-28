@@ -47,6 +47,7 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
     private lateinit var edgeToEdgePreference: TwoStatePreference
     private lateinit var blurUiPreference: TwoStatePreference
     private lateinit var oneUiThemePreference: TwoStatePreference
+    private lateinit var wallpaperThemePreference: ListPreference
 
     override fun onCreateSettingsPreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_personalization, rootKey)
@@ -58,6 +59,7 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
         blackNightThemePreference = requireNotNull(findPreference(KEY_BLACK_NIGHT_THEME))
         useSystemColorPreference = requireNotNull(findPreference(KEY_USE_SYSTEM_COLOR))
         customAccentPreference = requireNotNull(findPreference("custom_accent"))
+        wallpaperThemePreference = requireNotNull(findPreference(KEY_WALLPAPER_THEME))
 
         nightModePreference.apply {
             value = ShizukuSettings.getNightMode()
@@ -117,6 +119,18 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
                     }
                 }
                 true
+            }
+        }
+
+        wallpaperThemePreference.apply {
+            value = ShizukuSettings.getWallpaperTheme()
+            setOnPreferenceChangeListener { _, newValue ->
+                if (newValue is String && ShizukuSettings.getWallpaperTheme() != newValue) {
+                    ShizukuSettings.setWallpaperTheme(newValue)
+                    value = newValue
+                    applyTheme(requiresRecreate = false)
+                }
+                false
             }
         }
 

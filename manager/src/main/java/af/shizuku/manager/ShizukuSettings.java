@@ -135,6 +135,7 @@ public class ShizukuSettings {
         public static final String KEY_BLUR_UI = "blur_ui_enabled";
         public static final String KEY_ONEUI_THEME = "oneui_theme_enabled";
         public static final String KEY_ONE_HANDED_MODE = "one_handed_mode";
+        public static final String KEY_WALLPAPER_THEME = "wallpaper_theme";
 
         // Migration (Shizuku+ additions)
         public static final String KEY_MIGRATION_OFFERED = "migration_offered";
@@ -266,6 +267,14 @@ public class ShizukuSettings {
 
     public static boolean isOneHandedModeEnabled() {
         return getPreferences().getBoolean(Keys.KEY_ONE_HANDED_MODE, false);
+    }
+
+    public static String getWallpaperTheme() {
+        return getPreferences().getString(Keys.KEY_WALLPAPER_THEME, "white_miku");
+    }
+
+    public static void setWallpaperTheme(String theme) {
+        getPreferences().edit().putString(Keys.KEY_WALLPAPER_THEME, theme).apply();
     }
 
     public static int getAnimationIntensity() {

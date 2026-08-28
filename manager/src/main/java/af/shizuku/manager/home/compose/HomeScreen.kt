@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 fun HomeScreen(
     isEditMode: Boolean,
     showEmptyState: Boolean,
+    wallpaperTheme: String,
     onStopClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onHelpClick: () -> Unit,
@@ -101,7 +103,7 @@ fun HomeScreen(
             top = innerPadding.calculateTopPadding(),
             bottom = innerPadding.calculateBottomPadding() + 72.dp
         )
-        AnimatedGradientBackground {
+        AnimatedGradientBackground(wallpaperTheme = wallpaperTheme) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -133,7 +135,10 @@ fun HomeScreen(
 }
 
 @Composable
-fun AnimatedGradientBackground(content: @Composable () -> Unit) {
+fun AnimatedGradientBackground(
+    wallpaperTheme: String,
+    content: @Composable () -> Unit
+) {
     val animationsEnabled = ShizukuSettings.isExpressiveAnimationsEnabled()
     val infiniteTransition = rememberInfiniteTransition()
     val alpha by infiniteTransition.animateFloat(
@@ -150,17 +155,34 @@ fun AnimatedGradientBackground(content: @Composable () -> Unit) {
     val color1 = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f + 0.05f * alpha)
     val color2 = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.03f + 0.05f * (1f - alpha))
     val color3 = MaterialTheme.colorScheme.secondary.copy(alpha = 0.03f)
+    val wallpaperRes = when (wallpaperTheme) {
+        "white_miku" -> R.drawable.wallpaper_bg_light
+        "black_miku" -> R.drawable.wallpaper_bg_dark
+        else -> null
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.sweepGradient(
-                    colors = listOf(color1, color2, color3, color1),
-                    center = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY) // Sweep from bottom corner
-                )
-            )
     ) {
+        if (wallpaperRes != null) {
+            Image(
+                painter = painterResource(id = wallpaperRes),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize()
+            )
+        }
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.sweepGradient(
+                        colors = listOf(color1, color2, color3, color1),
+                        center = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY) // Sweep from bottom corner
+                    )
+                )
+        )
         content()
     }
 }

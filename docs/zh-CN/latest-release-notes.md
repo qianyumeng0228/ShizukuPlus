@@ -6,4 +6,4 @@
 - 恢复大屏和 DeX 的响应式双列网格。
 - 修复 Shape Style 选择器里 `Zen` 选项说明不准确的问题。
 - 采用 `AppCompatDelegate.setApplicationLocales()` 作为应用语言来源。
-- 适配了白色初音和黑色初音主题壁纸。
+- 外观里新增壁纸功能，内置 3 种壁纸可选：原版、白色初音、黑色初音。
