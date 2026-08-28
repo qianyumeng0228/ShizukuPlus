@@ -339,11 +339,16 @@ open class HomeActivity : AppActivity(), MavericksView {
         // Check for updates on app startup (if enabled)
         checkForUpdates()
 
-        // Force single column for original Shizuku look
-        val spanCount = 1
+        // Responsive grid for large screens and DeX (#76) - single column on phones preserves
+        // the original Shizuku look, 2 columns kicks in on tablets/landscape/DeX where a single
+        // column of cards leaves most of the width empty.
+        val spanCount = if (resources.configuration.screenWidthDp >= 600 ||
+            resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        ) 2 else 1
         val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, spanCount)
         layoutManager.spanSizeLookup = object : androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int = 1
+            // The status card (position 0) always takes the full width for visibility.
+            override fun getSpanSize(position: Int): Int = if (position == 0) spanCount else 1
         }
         recyclerView.layoutManager = layoutManager
 

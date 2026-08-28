@@ -230,8 +230,9 @@ class PlusFeaturePreference(context: Context, attrs: AttributeSet) : SwitchPrefe
                 )
             }
 
+            val enableFeatureLabel = context.getString(R.string.settings_plus_feature_help_enable)
             val switchText = TextView(context).apply {
-                text = context.getString(R.string.settings_plus_enable_feature)
+                text = enableFeatureLabel
                 setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15f)
                 setTypeface(null, android.graphics.Typeface.BOLD)
                 setTextColor(resolveColor(com.google.android.material.R.attr.colorOnPrimaryContainer, 0xFF004D40.toInt()))
@@ -242,6 +243,9 @@ class PlusFeaturePreference(context: Context, attrs: AttributeSet) : SwitchPrefe
 
             val mSwitch = com.google.android.material.materialswitch.MaterialSwitch(context).apply {
                 isChecked = this@PlusFeaturePreference.isChecked
+                // Standalone switch with no adjacent Preference row for TalkBack to borrow a
+                // label from - without this it announces only "Switch, on/off" with no context.
+                contentDescription = enableFeatureLabel
                 setOnCheckedChangeListener { _, isCheckedVal ->
                     this@PlusFeaturePreference.isChecked = isCheckedVal
                     this@PlusFeaturePreference.callChangeListener(isCheckedVal)
@@ -253,7 +257,7 @@ class PlusFeaturePreference(context: Context, attrs: AttributeSet) : SwitchPrefe
 
             // Dismiss Button
             val closeButton = com.google.android.material.button.MaterialButton(context).apply {
-                text = context.getString(R.string.action_close)
+                text = context.getString(R.string.settings_plus_feature_help_close)
                 cornerRadius = (24 * context.resources.displayMetrics.density).toInt()
                 val params = android.widget.LinearLayout.LayoutParams(
                     android.view.ViewGroup.LayoutParams.MATCH_PARENT,

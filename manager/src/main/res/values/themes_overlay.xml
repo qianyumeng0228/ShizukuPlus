@@ -178,6 +178,43 @@
         <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.Squircle.Corner.ExtraLarge</item>
     </style>
 
+    <!-- Cut (Angular): M3 Expressive's "Embrace Tension" principle (mixing sharp/angular forms
+         with soft/rounded ones) via the CUT corner family (a stable, non-experimental
+         ShapeAppearance attribute) instead of ROUNDED - a genuinely different silhouette from the
+         other three styles, not just a different radius on the same rounded-rect shape. Google's
+         actual M3 Expressive polygon shape library (MaterialShapes - cookie/sunny/clover/pill,
+         see androidx.compose.material3.MaterialShapes) can't be adopted here: it's a Compose-only
+         Canvas/RoundedPolygon renderer with no equivalent in the ShapeAppearanceModel/
+         MaterialCardView system this app's (mostly XML View-based) UI uses, and it's still
+         @ExperimentalMaterial3ExpressiveApi (material3 1.5.0-alpha) besides. -->
+    <style name="ShapeAppearance.Cut.Corner.ExtraSmall" parent="ShapeAppearance.Material3.Corner.ExtraSmall">
+        <item name="cornerFamily">cut</item>
+        <item name="cornerSize">4dp</item>
+    </style>
+    <style name="ShapeAppearance.Cut.Corner.Small" parent="ShapeAppearance.Material3.Corner.Small">
+        <item name="cornerFamily">cut</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+    <style name="ShapeAppearance.Cut.Corner.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerFamily">cut</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+    <style name="ShapeAppearance.Cut.Corner.Large" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerFamily">cut</item>
+        <item name="cornerSize">18dp</item>
+    </style>
+    <style name="ShapeAppearance.Cut.Corner.ExtraLarge" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+        <item name="cornerFamily">cut</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+    <style name="ThemeOverlay.Shape.Cut">
+        <item name="shapeAppearanceCornerExtraSmall">@style/ShapeAppearance.Cut.Corner.ExtraSmall</item>
+        <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.Cut.Corner.Small</item>
+        <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.Cut.Corner.Medium</item>
+        <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.Cut.Corner.Large</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.Cut.Corner.ExtraLarge</item>
+    </style>
+
     <!--
         Expressive Shapes toggle (settings key "expressive_shapes"), when turned OFF: flattens
         the app back to plain Material3 (non-Expressive) corner treatment regardless of shape_style,
@@ -187,10 +224,12 @@
 
     <!--
         One UI style theme overlay (settings key "oneui_theme_enabled").
-        Applies Samsung One UI design language: Galaxy Blue accent (#0381FE), extra-large rounded
-        corners, and heavier typography. Applied after the dynamic-color and shape overlays, so
-        Samsung Blue wins over Monet when this is on. Users who prefer their wallpaper color
-        should leave One UI mode off.
+        Deliberately structure-only, not color: extra-large rounded corners, heavier typography,
+        and One UI-style preference padding - the app's existing dynamic-color/custom-accent
+        toggle already covers color (and on One UI 4.1+ that toggle already tracks the device's
+        real Monet/wallpaper color, since Samsung's dynamic theming is built on the same
+        system_accent1/2/3 tokens). A separate fixed "Galaxy Blue" override here would fight that
+        instead of composing with it, so this overlay sets no color attrs at all.
     -->
     <style name="ShapeAppearance.OneUI.Corner.ExtraSmall" parent="ShapeAppearance.Material3.Corner.ExtraSmall">
         <item name="cornerFamily">rounded</item>
@@ -214,15 +253,6 @@
     </style>
 
     <style name="ThemeOverlay.OneUI" parent="">
-        <!-- Samsung Galaxy Blue -->
-        <item name="colorPrimary">#0381FE</item>
-        <item name="colorPrimaryContainer">#D5EAFF</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorOnPrimaryContainer">#001E3A</item>
-        <item name="colorSecondary">#4A90D9</item>
-        <item name="colorSecondaryContainer">#D9ECFF</item>
-        <item name="colorOnSecondary">#FFFFFF</item>
-        <item name="colorOnSecondaryContainer">#001E3A</item>
         <!-- One UI signature extra-large corners -->
         <item name="shapeAppearanceCornerExtraSmall">@style/ShapeAppearance.OneUI.Corner.ExtraSmall</item>
         <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.OneUI.Corner.Small</item>
@@ -233,26 +263,15 @@
         <item name="textAppearanceHeadlineLarge">@style/TextAppearance.OneUI.HeadlineLarge</item>
         <item name="textAppearanceTitleLarge">@style/TextAppearance.OneUI.TitleLarge</item>
         <item name="textAppearanceTitleMedium">@style/TextAppearance.OneUI.TitleMedium</item>
-        <!-- Preference screens: bold blue category headers + One UI item padding.
-             The rikka library already sets listPreferredItemPadding* to 24dp/16dp and
-             category title color to ?colorPrimary (Samsung Blue), so those are free. -->
+        <!-- Preference screens: bold category headers + One UI item padding. The rikka library
+             already sets listPreferredItemPadding* to 24dp/16dp and category title color to
+             ?colorPrimary (whatever that resolves to - dynamic/accent/default), so those are
+             free; only the text style (size/weight/spacing) is set here. -->
         <item name="preferenceTheme">@style/AppTheme.PreferenceThemeOverlay.OneUI</item>
         <!-- Explicit padding assertion (rikka's ThemeOverlay.Rikka.Material3.Preference
              sets these but isn't guaranteed to be applied when we apply at overlay level) -->
         <item name="android:listPreferredItemPaddingStart">24dp</item>
         <item name="android:listPreferredItemPaddingEnd">16dp</item>
-    </style>
-
-    <style name="ThemeOverlay.OneUI.Dark" parent="ThemeOverlay.OneUI">
-        <!-- Slightly lighter blue for dark-mode contrast (WCAG AA on dark surfaces) -->
-        <item name="colorPrimary">#3A8BFF</item>
-        <item name="colorPrimaryContainer">#003B79</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorOnPrimaryContainer">#D5EAFF</item>
-        <item name="colorSecondary">#7AB4F5</item>
-        <item name="colorSecondaryContainer">#003366</item>
-        <item name="colorOnSecondary">#001E3A</item>
-        <item name="colorOnSecondaryContainer">#D9ECFF</item>
     </style>
 
     <style name="TextAppearance.OneUI.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">

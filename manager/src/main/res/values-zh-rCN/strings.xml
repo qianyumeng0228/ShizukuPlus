@@ -285,6 +285,22 @@
     <string name="settings_category_material_you">Material You</string>
     <string name="settings_category_language">语言</string>
 
+    <string name="settings_main_category_capabilities">功能</string>
+    <string name="settings_main_category_personalization">个性化</string>
+    <string name="settings_main_category_system">系统</string>
+    <string name="settings_main_nav_feature_hub_title">功能中心</string>
+    <string name="settings_main_nav_feature_hub_summary">管理 Shizuku+ 专属功能</string>
+    <string name="settings_main_nav_root_compat_title">Root 与兼容性</string>
+    <string name="settings_main_nav_root_compat_summary">ADB 连接、SU 桥接、无 Root 集成以及原版 Shizuku 兼容性</string>
+    <string name="settings_main_nav_appearance_summary">主题、形状、图标、动效、主页布局和语言</string>
+    <string name="settings_main_nav_app_interactions_title">应用交互</string>
+    <string name="settings_main_nav_app_interactions_summary">手势、长按操作和安装验证</string>
+    <string name="settings_main_nav_startup_behavior_title">启动与行为</string>
+    <string name="settings_main_nav_startup_behavior_summary">开机选项、Watchdog、网络和活动状态</string>
+    <string name="settings_main_nav_advanced_diagnostics_title">高级与诊断</string>
+    <string name="settings_main_nav_advanced_diagnostics_summary">日志、ADB 工具和故障排查</string>
+    <string name="settings_main_nav_about_summary">版本、许可和更新</string>
+
     <string name="root_hub_magic_setup_all_summary">Shizuku+ 已为您配置了 %d 个应用！</string>
     <string name="root_hub_magic_setup_success">Magic Setup 完成！Shizuku+ 已为您配置了 %s。</string>
     <string name="root_hub_magic_setup_fail">Magic Setup 失败。请尝试手动复制路径。</string>
@@ -497,6 +513,8 @@
     <string name="settings_plus_app_setup_title"><![CDATA[设置集成]]></string>
     <string name="settings_plus_app_open"><![CDATA[打开应用]]></string>
     <string name="settings_plus_learn_more"><![CDATA[了解更多]]></string>
+    <string name="settings_plus_feature_help_enable">启用功能</string>
+    <string name="settings_plus_feature_help_close">关闭</string>
     <string name="help_general_plus_summary"><![CDATA[<b>Shizuku+ 如何与其他应用配合使用</b><br><br>Shizuku+ 提供<i>Plus 专属功能</i>（如存储桥接、AI 桥接和主题桥接）。本应用以及明确面向 Shizuku+ API（af.shizuku.plus.api）的第三方应用都可以使用这些功能。<br><br><b>重要提示：</b>Shizuku+ 完全兼容原版 Shizuku API。现有的 Shizuku 应用（如 SD Maid SE 和 SwiftBackup）无需开发者更新，即可自动发现并使用 Shizuku+。<br><br><b>与原版 Shizuku 共存：</b>同一时间只能运行一个 Shizuku 服务。如果仍安装了原版 Shizuku，可以通过主页上的伴侣卡片快速切换；但建议卸载原版 Shizuku，仅使用 Shizuku+。]]></string>
     <string name="help_dhizuku_title"><![CDATA[关于 Dhizuku 模式]]></string>
     <string name="help_dhizuku_detail"><![CDATA[Dhizuku 允许 Shizuku 与第三方应用共享设备所有者（DevicePolicyManager）权限。这对 Dhizuku Manager 或信息亭模式工具等应用很重要，因为这些应用需要管理系统策略，但又不能成为唯一的设备所有者。]]></string>

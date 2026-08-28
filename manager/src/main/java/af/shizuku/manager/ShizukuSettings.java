@@ -139,6 +139,9 @@ public class ShizukuSettings {
         // Migration (Shizuku+ additions)
         public static final String KEY_MIGRATION_OFFERED = "migration_offered";
         public static final String KEY_HOME_NOTIF_PERMISSION_REQUESTED = "home_notif_permission_requested";
+        // #429: one-time handoff of the legacy custom locale into AppCompat's
+        // per-app-language store (AppCompatDelegate.setApplicationLocales()).
+        public static final String KEY_MIGRATED_APPCOMPAT_LOCALES = "migrated_appcompat_locales";
 
         // Auto Update (Shizuku+ additions)
         public static final String KEY_AUTO_UPDATE_ENABLED = "auto_update_enabled";
@@ -149,6 +152,7 @@ public class ShizukuSettings {
         public static final String KEY_LAST_SEEN_VERSION = "last_seen_version";
         public static final String KEY_LAST_SEEN_CHANGELOG_VERSION = "last_seen_changelog_version";
         public static final String KEY_SERVER_STARTED_BUILD = "server_started_build";
+        public static final String KEY_LAST_SETTLED_STATE = "last_settled_shizuku_state";
 
         // Companion Mode (Shizuku+ additions)
         public static final String KEY_COMPANION_MODE = "companion_mode";
@@ -185,6 +189,22 @@ public class ShizukuSettings {
 
     public static void setServerStartedBuild(int versionCode) {
         getPreferences().edit().putInt(Keys.KEY_SERVER_STARTED_BUILD, versionCode).apply();
+    }
+
+    /**
+     * The last "settled" {@code ShizukuStateMachine.State} (RUNNING/STOPPED/CRASHED) written before
+     * this process exited, or null if never recorded. A freshly cold-started process (e.g. after an
+     * OEM freezer killed the app - #417) has no in-memory record of whether the server was RUNNING
+     * or deliberately STOPPED before the kill; without this, ShizukuStateMachine.update()'s in-memory
+     * default (STOPPED) makes an unexpected death indistinguishable from an intentional stop, so the
+     * watchdog's external re-arm (WatchdogAlarmReceiver) never sees a CRASHED transition to act on.
+     */
+    public static String getLastSettledState() {
+        return getPreferences().getString(Keys.KEY_LAST_SETTLED_STATE, null);
+    }
+
+    public static void setLastSettledState(String stateName) {
+        getPreferences().edit().putString(Keys.KEY_LAST_SETTLED_STATE, stateName).apply();
     }
 
     public static boolean isSentryLimitReached() {
@@ -624,6 +644,27 @@ public class ShizukuSettings {
             return Locale.getDefault();
         }
         return Locale.forLanguageTag(tag);
+    }
+
+    /** Raw KEY_LANGUAGE value, unlike {@link #getLocale()} this does NOT collapse
+     *  null/"SYSTEM" to {@link Locale#getDefault()} — used by the #429 one-time
+     *  AppCompatDelegate locale migration to tell "never picked anything" apart
+     *  from "explicitly picked System". */
+    public static String getRawLanguageTag() {
+        SharedPreferences p = getPreferences();
+        return p != null ? p.getString(Keys.KEY_LANGUAGE, null) : null;
+    }
+
+    // #429: has the legacy custom locale already been pushed into AppCompat's
+    // own per-app-language store? Runs exactly once, ever.
+    public static boolean hasMigratedToAppCompatLocales() {
+        SharedPreferences p = getPreferences();
+        return p != null && p.getBoolean(Keys.KEY_MIGRATED_APPCOMPAT_LOCALES, false);
+    }
+
+    public static void setMigratedToAppCompatLocales() {
+        SharedPreferences p = getPreferences();
+        if (p != null) p.edit().putBoolean(Keys.KEY_MIGRATED_APPCOMPAT_LOCALES, true).apply();
     }
 
     public static boolean isDhizukuModeEnabled() {

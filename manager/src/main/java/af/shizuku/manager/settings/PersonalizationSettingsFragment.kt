@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.TwoStatePreference
@@ -28,7 +29,7 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
         }
     }
 
-    override fun getTitle(): CharSequence? = getString(R.string.settings_appearance_title)
+    override fun getTitle(): CharSequence? = getString(R.string.settings_category_appearance)
 
     private var colorThemeCategory: CollapsiblePreferenceCategory? = null
     private lateinit var nightModePreference: IntegerSimpleMenuPreference
@@ -223,8 +224,28 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
                 } else {
                     Locale.forLanguageTag(newValue)
                 }
+                // Immediate fallback in case setApplicationLocales() below doesn't trigger a
+                // recreate for some reason; AppActivity.attachBaseContext() re-syncs this from
+                // AppCompatDelegate on every activity creation regardless (#429), so this is
+                // belt-and-suspenders, not the actual mechanism.
                 LocaleDelegate.defaultLocale = locale
-                applyTheme(requiresRecreate = true)
+
+                // #429: setApplicationLocales() triggers its own recreate on API <33 (and a
+                // config-change/recreate on 33+), so we must NOT also call
+                // applyTheme(requiresRecreate = true) here — that would double-recreate the
+                // activity or risk a recreate loop.
+                val requested = if ("SYSTEM" == newValue) {
+                    LocaleListCompat.getEmptyLocaleList()
+                } else {
+                    LocaleListCompat.forLanguageTags(newValue)
+                }
+                if (AppCompatDelegate.getApplicationLocales() != requested) {
+                    AppCompatDelegate.setApplicationLocales(requested)
+                } else {
+                    // No-op locale change (e.g. re-selecting current language) —
+                    // still apply any pending theme-only changes normally.
+                    applyTheme(requiresRecreate = false)
+                }
             }
             true
         }
@@ -324,12 +345,11 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
     private fun getCustomAccentSummary(value: String? = null): String {
         val currentValue = value ?: ShizukuSettings.getPreferences().getString("custom_accent", "DEFAULT")
         return when (currentValue) {
-            "VIOLET" -> getString(R.string.custom_accent_violet_applied)
-            "GREEN" -> getString(R.string.custom_accent_green_applied)
-            "CRIMSON" -> getString(R.string.custom_accent_crimson_applied)
-            "OCEAN" -> getString(R.string.custom_accent_ocean_applied)
-            "DEFAULT" -> getString(R.string.custom_accent_default_applied)
-            else -> getString(R.string.custom_accent_default_applied)
+            "VIOLET" -> getString(R.string.settings_accent_violet_applied)
+            "GREEN" -> getString(R.string.settings_accent_green_applied)
+            "CRIMSON" -> getString(R.string.settings_accent_crimson_applied)
+            "OCEAN" -> getString(R.string.settings_accent_ocean_applied)
+            else -> getString(R.string.settings_accent_default_applied)
         }
     }
 }

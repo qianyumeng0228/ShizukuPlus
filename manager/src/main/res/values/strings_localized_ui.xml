@@ -163,9 +163,6 @@
     <string name="service_state_update_failed">Failed to update Shizuku state: %1$s</string>
     <string name="diagnostics_open_battery_failed">Could not open battery settings</string>
     <string name="diagnostics_setup_device_owner_title">Set Up Device Owner</string>
-    <string name="diagnostics_command_copied">Command copied</string>
-    <string name="diagnostics_disable_title">Disable Diagnostics?</string>
-    <string name="diagnostics_disable_message">This will hide the diagnostic warning panel. You can re-enable it anytime from advanced settings.</string>
     <string name="diagnostics_disable_button">Disable</string>
     <string name="root_ota_danger_title">Dangerous Experimental Feature</string>
     <string name="root_ota_danger_message">Systemless OTA Flashing uses android.os.UpdateEngine via the Shizuku shell to install zip payloads to your inactive slot.\n\nDANGER: Flashing an incompatible payload WILL result in a hard brick or bootloop. Are you sure you want to enable this feature?</string>
@@ -225,10 +222,8 @@
     <string name="root_su_path_custom">Custom path...</string>
     <string name="diagnostics_warning_dhizuku_owner">Dhizuku Mode is enabled, but the Device Owner component is not active. Tap to resolve.</string>
     <string name="diagnostics_warning_shadow_binder">Shadow Binder is enabled, but no apps are selected to hide. Tap to select apps.</string>
-    <string name="diagnostics_warning_battery_optimization">Battery optimization is active. Shizuku may be killed in the background. Tap to exempt it.</string>
     <string name="diagnostics_shadow_binder_select_apps_hint">Go to Feature Hub → Security &amp; Access → Shadow Binder to select apps</string>
     <string name="diagnostics_device_owner_message">Dhizuku Mode requires this app to be the Device Owner.\n\nRun this command from your PC while USB debugging is enabled:\n\n%1$s</string>
-    <string name="diagnostics_copy_command">Copy command</string>
     <string name="diagnostics_clipboard_label">dpm command</string>
     <string name="notification_auth_errors_channel_name">Authentication Errors</string>
     <string name="live_activity_channel_name">Shizuku+ live status</string>

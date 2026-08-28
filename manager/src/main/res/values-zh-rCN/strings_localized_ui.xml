@@ -144,6 +144,10 @@
     <string name="home_layout_simulator_developer_guide">开发者指南</string>
     <string name="home_layout_simulator_hint">点击模拟设备中的模块，即可立即切换它们在主页上的显示状态。</string>
 
+    <string name="fake_adb_pairing_title">允许模拟 ADB 连接？</string>
+    <string name="fake_adb_pairing_message">有应用尝试通过本地模拟的 ADB 服务连接 Shizuku+。\n\nRSA 密钥指纹：\n%1$s</string>
+    <string name="fake_adb_pairing_allow">允许</string>
+    <string name="fake_adb_pairing_deny">拒绝</string>
     <string name="fake_adb_allow_title">允许模拟的 ADB 连接？</string>
     <string name="fake_adb_allow_message">有应用尝试通过本地模拟的 ADB 服务连接 Shizuku+。\n\nRSA 密钥指纹：\n%1$s</string>
     <string name="fake_adb_allow">允许</string>
@@ -162,12 +166,19 @@
     <string name="biometric_unlock_title">解锁 Shizuku+</string>
     <string name="biometric_unlock_subtitle">验证身份以访问敏感设置</string>
     <string name="service_state_update_failed">更新 Shizuku 状态失败：%1$s</string>
+    <string name="diagnostics_warning_dhizuku_not_owner">已启用 Dhizuku 模式，但设备所有者组件未激活。点按以处理。</string>
+    <string name="diagnostics_warning_shadow_binder_no_apps">已启用 Shadow Binder，但尚未选择要隐藏的应用。点按以选择应用。</string>
     <string name="diagnostics_open_battery_failed">无法打开电池设置</string>
+    <string name="diagnostics_battery_settings_open_failed">无法打开电池设置</string>
+    <string name="diagnostics_shadow_binder_navigate_hint">前往功能中心 → 安全与访问 → Shadow Binder 选择应用</string>
+    <string name="diagnostics_device_owner_setup_title">设置设备所有者</string>
+    <string name="diagnostics_device_owner_setup_message">Dhizuku 模式要求将本应用设为设备所有者。\n\n请在电脑上启用 USB 调试后运行以下命令：\n\n%1$s</string>
     <string name="diagnostics_setup_device_owner_title">设置设备所有者</string>
     <string name="diagnostics_command_copied">命令已复制</string>
     <string name="diagnostics_disable_title">禁用诊断？</string>
     <string name="diagnostics_disable_message">这会隐藏诊断警告面板。你可以随时从高级设置中重新启用。</string>
     <string name="diagnostics_disable_button">禁用</string>
+    <string name="diagnostics_disable_confirm">禁用</string>
     <string name="root_ota_danger_title">危险的实验性功能</string>
     <string name="root_ota_danger_message">无系统 OTA 刷写会通过 Shizuku Shell 使用 android.os.UpdateEngine，将 zip 载荷安装到非活动槽位。\n\n危险：刷写不兼容的载荷将导致设备硬砖或陷入启动循环。确定要启用此功能吗？</string>
     <string name="root_ota_enable">我了解，启用</string>

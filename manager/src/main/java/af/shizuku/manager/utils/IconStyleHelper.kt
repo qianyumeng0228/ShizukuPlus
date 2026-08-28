@@ -14,6 +14,7 @@ import af.shizuku.manager.R
 import af.shizuku.manager.ShizukuSettings
 import af.shizuku.manager.ktx.themeColor
 import kotlin.math.abs
+import kotlin.math.min
 
 object IconStyleHelper {
 
@@ -174,11 +175,63 @@ object IconStyleHelper {
                 cornerRadius = 14 * context.resources.displayMetrics.density
                 setColor(color)
             }
+            "cut" -> cutDrawable(context, color)
             else -> GradientDrawable().apply { // "modern"
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = 8 * context.resources.displayMetrics.density
                 setColor(color)
             }
+        }
+    }
+
+    /**
+     * The Cut style's icon pill: an octagon (all four rectangle corners cut at 45°), matching the
+     * shape_style overlay's CUT corner family (see themes_overlay.xml) instead of ROUNDED - keeps
+     * the same "distinct silhouette per style" treatment leafDrawable() gives "zen" rather than
+     * falling back to a rounded rectangle indistinguishable from the other styles.
+     * GradientDrawable has no native cut-corner support (only rounded), so this draws the
+     * octagon path directly via a small custom Drawable instead.
+     */
+    private fun cutDrawable(context: Context, color: Int): Drawable {
+        val cutFraction = 0.28f // corner cut as a fraction of the shorter side
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            style = android.graphics.Paint.Style.FILL
+            this.color = color
+        }
+        return object : Drawable() {
+            private val path = android.graphics.Path()
+
+            override fun onBoundsChange(bounds: android.graphics.Rect) {
+                super.onBoundsChange(bounds)
+                val w = bounds.width().toFloat()
+                val h = bounds.height().toFloat()
+                val cut = min(w, h) * cutFraction
+                path.reset()
+                path.moveTo(cut, 0f)
+                path.lineTo(w - cut, 0f)
+                path.lineTo(w, cut)
+                path.lineTo(w, h - cut)
+                path.lineTo(w - cut, h)
+                path.lineTo(cut, h)
+                path.lineTo(0f, h - cut)
+                path.lineTo(0f, cut)
+                path.close()
+            }
+
+            override fun draw(canvas: android.graphics.Canvas) {
+                canvas.drawPath(path, paint)
+            }
+
+            override fun setAlpha(alpha: Int) {
+                paint.alpha = alpha
+            }
+
+            override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
+                paint.colorFilter = colorFilter
+            }
+
+            @Deprecated("Deprecated in Java", ReplaceWith("PixelFormat.TRANSLUCENT"))
+            override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
         }
     }
 

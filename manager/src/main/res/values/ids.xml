@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="tag_app_icon_package" type="id" />
+    <item name="accessibility_action_swipe_right" type="id" />
+    <item name="accessibility_action_swipe_left" type="id" />
 </resources>

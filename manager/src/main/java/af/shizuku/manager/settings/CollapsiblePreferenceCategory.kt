@@ -2,6 +2,7 @@ package af.shizuku.manager.settings
 
 import android.content.Context
 import android.util.AttributeSet
+import androidx.core.view.ViewCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceManager
@@ -54,6 +55,7 @@ class CollapsiblePreferenceCategory @JvmOverloads constructor(
 
         // Sync arrow to current state without animation on first bind
         arrow?.rotation = if (expanded) 180f else 0f
+        updateExpandedStateDescription(holder.itemView)
 
         holder.itemView.setOnClickListener {
             expanded = !expanded
@@ -70,8 +72,20 @@ class CollapsiblePreferenceCategory @JvmOverloads constructor(
             // the running ViewPropertyAnimator and could leave the RecyclerView's sync pass
             // needing a second click to fully settle on the expanded child list.
             updateChildren()
+            updateExpandedStateDescription(holder.itemView)
             onExpansionChanged?.invoke(expanded)
         }
+    }
+
+    /** The rotating arrow is the only visual cue this header is an expand/collapse toggle -
+     *  TalkBack users get neither that affordance nor a state change announcement without this. */
+    private fun updateExpandedStateDescription(itemView: android.view.View) {
+        ViewCompat.setStateDescription(
+            itemView,
+            itemView.context.getString(
+                if (expanded) R.string.accessibility_state_expanded else R.string.accessibility_state_collapsed
+            )
+        )
     }
 
     fun isExpanded() = expanded

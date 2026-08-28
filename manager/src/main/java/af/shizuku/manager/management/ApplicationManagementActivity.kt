@@ -310,7 +310,7 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
                 item ?: return
 
                 val action = if (direction == ItemTouchHelper.RIGHT) swipeRightAction else swipeLeftAction
-                handleSwipeAction(item, action, vh)
+                handleSwipeAction(item, action, vh.itemView)
             }
 
             override fun onChildDraw(
@@ -328,7 +328,10 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
         ItemTouchHelper(cb).attachToRecyclerView(rv)
     }
 
-    private fun handleSwipeAction(item: PackageInfo, action: String, vh: RecyclerView.ViewHolder) {
+    // internal (not private): also invoked from AppViewHolder for the TalkBack-accessible
+    // equivalent of the swipe gestures (#41) - swiping to trigger an action has no screen-reader
+    // affordance, so AppViewHolder exposes the same actions via custom accessibility actions.
+    internal fun handleSwipeAction(item: PackageInfo, action: String, itemView: View) {
         val opts = ActivityOptions.makeCustomAnimation(
             this, android.R.anim.fade_in, android.R.anim.fade_out
         ).toBundle()
@@ -337,9 +340,9 @@ open class ApplicationManagementActivity : AppBarActivity(), AppViewHolder.Callb
         ActivityLogManager.log(appLabel, item.packageName, "Swipe: $action")
 
         if (action == "none") {
-            HapticUtils.error(vh.itemView)
+            HapticUtils.error(itemView)
         } else {
-            HapticUtils.success(vh.itemView)
+            HapticUtils.success(itemView)
         }
 
         when (action) {
