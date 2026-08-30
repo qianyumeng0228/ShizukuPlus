@@ -16,7 +16,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -136,7 +135,6 @@ fun HomeScreen(
 }
 }
 
-@Composable
 @Composable
 fun HomeEmptyState(onRestoreHomeCards: () -> Unit) {
     val animationsEnabled = ShizukuSettings.isExpressiveAnimationsEnabled()
