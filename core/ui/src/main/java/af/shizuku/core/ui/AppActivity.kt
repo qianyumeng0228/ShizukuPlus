@@ -2,6 +2,7 @@ package af.shizuku.core.ui
 
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.res.Resources.Theme
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -14,6 +15,8 @@ import android.view.View
 import android.view.Window
 import android.view.animation.LinearInterpolator
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatDelegate
+import rikka.material.app.LocaleDelegate
 import rikka.material.app.MaterialActivity
 
 abstract class AppActivity : MaterialActivity() {
@@ -37,6 +40,38 @@ abstract class AppActivity : MaterialActivity() {
         // survives across the recreate() (which keeps the process alive).
         @JvmStatic
         private var recreateSnapshot: Bitmap? = null
+    }
+
+    // #429: MaterialActivity (superclass) forces this activity's configuration locale to
+    // LocaleDelegate.defaultLocale in ITS OWN attachBaseContext, called via super below - so
+    // without this sync, a locale set through AppCompatDelegate.setApplicationLocales() (whether
+    // from our own settings picker or Android 13+'s system Settings > App Info > Language screen)
+    // would get silently overridden back to the legacy stored value on every single activity
+    // creation. Only takes over once ShizukuApplication's one-time migration has run (read
+    // directly from shared prefs, to avoid a cross-module dependency on manager's
+    // ShizukuSettings - but from the SAME device-protected-storage "settings" file
+    // ShizukuSettings.getPreferences() actually uses (createDeviceProtectedStorageContext(),
+    // filename "settings"), not the plain default-storage "${packageName}_preferences" file;
+    // those are two different files, and reading the wrong one would make this check always
+    // see false. Key name must match ShizukuSettings.Keys.KEY_MIGRATED_APPCOMPAT_LOCALES) -
+    // before the flag is set, AppCompatDelegate's locale list is meaningless/unset and
+    // LocaleDelegate must keep using whatever ShizukuApplication.onCreate() seeded it with from
+    // the legacy pref.
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = newBase.createDeviceProtectedStorageContext()
+            .getSharedPreferences("settings", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("migrated_appcompat_locales", false)) {
+            val appLocales = AppCompatDelegate.getApplicationLocales()
+            LocaleDelegate.defaultLocale = if (!appLocales.isEmpty) {
+                appLocales[0] ?: LocaleDelegate.systemLocale
+            } else {
+                // Empty list = "follow system" (explicitly chosen, or never set) - not "leave
+                // whatever LocaleDelegate currently holds", or picking "System" in our own
+                // picker would silently do nothing once this sync is live.
+                LocaleDelegate.systemLocale
+            }
+        }
+        super.attachBaseContext(newBase)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,8 +100,14 @@ abstract class AppActivity : MaterialActivity() {
         }
         suppressTransitionOnCreate = false
         // Read directly from shared prefs to avoid a cross-module dependency on manager's
-        // ShizukuSettings. Keys must match ShizukuSettings.Keys constants.
-        val prefs = getSharedPreferences("${packageName}_preferences", android.content.Context.MODE_PRIVATE)
+        // ShizukuSettings. Keys must match ShizukuSettings.Keys constants. Bug fix: this used to
+        // read the plain default-storage "${packageName}_preferences" file, but
+        // ShizukuSettings.getPreferences() actually stores these in the device-protected-storage
+        // "settings" file (see attachBaseContext() above) - the two never contained the same
+        // data, so this always silently read the fallback default regardless of what the user
+        // actually set (edge-to-edge could never be turned off, and Blur UI could never be turned
+        // on, since neither key was ever actually found in the file being read).
+        val prefs = createDeviceProtectedStorageContext().getSharedPreferences("settings", android.content.Context.MODE_PRIVATE)
         if (prefs.getBoolean("edge_to_edge_enabled", true)) {
             enableEdgeToEdge()
         }

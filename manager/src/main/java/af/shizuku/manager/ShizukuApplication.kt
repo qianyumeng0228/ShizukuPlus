@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.work.Configuration
 import com.topjohnwu.superuser.Shell
 import io.sentry.Sentry
@@ -431,6 +432,23 @@ class ShizukuApplication : Application(), Configuration.Provider {
         }
         AppContextManager.initialize(AppContextSettingsImpl())
         LocaleDelegate.defaultLocale = ShizukuSettings.getLocale()
+
+        // #429: one-time migration — push the legacy custom locale into AppCompat's
+        // own per-app-language store so AppCompatDelegate.getApplicationLocales()
+        // becomes authoritative going forward (system Settings > App Info > Language
+        // integration on API 33+; AppLocalesStorageHelper-backed persistence below
+        // it). AppActivity.attachBaseContext() re-syncs LocaleDelegate.defaultLocale
+        // from AppCompatDelegate on every activity creation once this flag is set,
+        // so AppCompatDelegate genuinely becomes the source of truth, not just a
+        // parallel/secondary write MaterialActivity ignores. Runs exactly once, ever.
+        if (!ShizukuSettings.hasMigratedToAppCompatLocales()) {
+            val tag = ShizukuSettings.getRawLanguageTag() // KEY_LANGUAGE pref, may be null/"SYSTEM"
+            if (!tag.isNullOrEmpty() && tag != "SYSTEM") {
+                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+            }
+            ShizukuSettings.setMigratedToAppCompatLocales()
+        }
+
         AppCompatDelegate.setDefaultNightMode(ShizukuSettings.getNightMode())
 
         // Initialize Starter with context

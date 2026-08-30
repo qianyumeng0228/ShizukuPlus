@@ -3,73 +3,73 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <af.shizuku.manager.settings.CollapsiblePreferenceCategory
-        android:title="@string/settings_capabilities_category"
+        android:title="@string/settings_main_category_capabilities"
         app:collapsible="false">
 
         <af.shizuku.manager.settings.PlusNavPreference
             android:key="nav_shizuku_plus"
-            android:title="@string/settings_feature_hub_title"
-            android:summary="@string/settings_feature_hub_summary"
+            android:title="@string/settings_main_nav_feature_hub_title"
+            android:summary="@string/settings_main_nav_feature_hub_summary"
             android:icon="@drawable/ic_bolt_24"
             android:fragment="af.shizuku.manager.settings.ShizukuPlusSettingsFragment" />
 
         <af.shizuku.manager.settings.PlusNavPreference
             android:key="nav_root_integration"
-            android:title="@string/settings_root_compatibility_title"
-            android:summary="@string/settings_root_compatibility_summary"
+            android:title="@string/settings_main_nav_root_compat_title"
+            android:summary="@string/settings_main_nav_root_compat_summary"
             android:icon="@drawable/ic_shield_24"
             android:fragment="af.shizuku.manager.settings.RootIntegrationSettingsFragment" />
 
     </af.shizuku.manager.settings.CollapsiblePreferenceCategory>
 
     <af.shizuku.manager.settings.CollapsiblePreferenceCategory
-        android:title="@string/settings_personalization_category"
+        android:title="@string/settings_main_category_personalization"
         app:collapsible="false">
 
         <Preference
             android:key="nav_personalization"
-            android:title="@string/settings_appearance_title"
-            android:summary="@string/settings_appearance_summary"
+            android:title="@string/settings_category_appearance"
+            android:summary="@string/settings_main_nav_appearance_summary"
             android:icon="@drawable/ic_palette_24"
             android:fragment="af.shizuku.manager.settings.PersonalizationSettingsFragment" />
 
         <Preference
             android:key="nav_app_management"
-            android:title="@string/settings_app_interactions_title"
-            android:summary="@string/settings_app_interactions_summary"
+            android:title="@string/settings_main_nav_app_interactions_title"
+            android:summary="@string/settings_main_nav_app_interactions_summary"
             android:icon="@drawable/ic_devices_24"
             android:fragment="af.shizuku.manager.settings.AppManagementSettingsFragment" />
 
     </af.shizuku.manager.settings.CollapsiblePreferenceCategory>
 
     <af.shizuku.manager.settings.CollapsiblePreferenceCategory
-        android:title="@string/settings_system_category"
+        android:title="@string/settings_main_category_system"
         app:collapsible="false">
 
         <Preference
             android:key="nav_behavior"
-            android:title="@string/settings_startup_behavior_title"
-            android:summary="@string/settings_startup_behavior_summary"
+            android:title="@string/settings_main_nav_startup_behavior_title"
+            android:summary="@string/settings_main_nav_startup_behavior_summary"
             android:icon="@drawable/ic_settings_suggest_24"
             android:fragment="af.shizuku.manager.settings.BehaviorSettingsFragment" />
 
         <Preference
             android:key="nav_advanced"
-            android:title="@string/settings_advanced_diagnostics_title"
-            android:summary="@string/settings_advanced_diagnostics_summary"
+            android:title="@string/settings_main_nav_advanced_diagnostics_title"
+            android:summary="@string/settings_main_nav_advanced_diagnostics_summary"
             android:icon="@drawable/ic_terminal_24"
             android:fragment="af.shizuku.manager.settings.AdvancedSettingsFragment" />
 
     </af.shizuku.manager.settings.CollapsiblePreferenceCategory>
 
     <af.shizuku.manager.settings.CollapsiblePreferenceCategory
-        android:title="@string/settings_about_category"
+        android:title="@string/settings_about"
         app:collapsible="false">
 
         <Preference
             android:key="nav_about"
-            android:title="@string/settings_about_title"
-            android:summary="@string/settings_about_summary"
+            android:title="@string/settings_about"
+            android:summary="@string/settings_main_nav_about_summary"
             android:icon="@drawable/ic_info_24"
             android:fragment="af.shizuku.manager.settings.AboutSettingsFragment" />
 

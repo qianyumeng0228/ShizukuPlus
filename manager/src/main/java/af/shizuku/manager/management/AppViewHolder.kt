@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.net.Uri
+import android.os.Bundle
 import android.util.TypedValue
 import android.provider.Settings
 import android.text.method.LinkMovementMethod
@@ -17,6 +18,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.AccessibilityDelegateCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +70,36 @@ class AppViewHolder(private val binding: AppListItemBinding) :
         itemView.filterTouchesWhenObscured = true
         itemView.setOnClickListener(this)
         itemView.setOnLongClickListener(this)
+        // TalkBack-accessible equivalent of the row's swipe-to-act gestures (#41) - a swipe
+        // gesture has no screen-reader affordance on its own. Reads the swipe-action settings and
+        // `data` live at query/perform time (not captured at bind time) so it can't go stale
+        // across a settings change or ViewHolder rebind without needing separate invalidation.
+        ViewCompat.setAccessibilityDelegate(itemView, object : AccessibilityDelegateCompat() {
+            override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                swipeActionLabel(host.context, ShizukuSettings.getSwipeRightAction())?.let { label ->
+                    info.addAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat(R.id.accessibility_action_swipe_right, label))
+                }
+                swipeActionLabel(host.context, ShizukuSettings.getSwipeLeftAction())?.let { label ->
+                    info.addAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat(R.id.accessibility_action_swipe_left, label))
+                }
+            }
+
+            override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean {
+                val activity = host.context as? ApplicationManagementActivity
+                when (action) {
+                    R.id.accessibility_action_swipe_right -> {
+                        activity?.handleSwipeAction(data, ShizukuSettings.getSwipeRightAction(), host)
+                        return true
+                    }
+                    R.id.accessibility_action_swipe_left -> {
+                        activity?.handleSwipeAction(data, ShizukuSettings.getSwipeLeftAction(), host)
+                        return true
+                    }
+                }
+                return super.performAccessibilityAction(host, action, args)
+            }
+        })
         pkg.setOnClickListener { v ->
             if ((adapter as AppsAdapter).isSelectionMode()) {
                 onClick(itemView)
@@ -314,6 +348,17 @@ class AppViewHolder(private val binding: AppListItemBinding) :
     }
 
     // ----- Helpers -----
+
+    /** Maps a swipe-action key (settings_app_management.xml's swipe_actions_values) to the same
+     *  human-readable label shown in the settings picker, or null for "none" (nothing to expose
+     *  as an accessibility action). */
+    private fun swipeActionLabel(context: Context, action: String): String? {
+        if (action == "none") return null
+        val values = context.resources.getStringArray(R.array.swipe_actions_values)
+        val labels = context.resources.getStringArray(R.array.swipe_actions)
+        val idx = values.indexOf(action)
+        return if (idx in labels.indices) labels[idx] else null
+    }
 
     private fun launchActivity(context: Context, intent: Intent) {
         val activity = context as? Activity

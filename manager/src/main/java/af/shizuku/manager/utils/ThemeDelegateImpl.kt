@@ -53,6 +53,7 @@ class ThemeDelegateImpl : ThemeDelegate {
                 "modern" -> R.style.ThemeOverlay_Shape_Modern
                 "classic" -> R.style.ThemeOverlay_Shape_Classic
                 "squircle" -> R.style.ThemeOverlay_Shape_Squircle
+                "cut" -> R.style.ThemeOverlay_Shape_Cut
                 else -> 0 // "zen" (default): keep the base Material3Expressive corner scale
             }
             if (shapeStyleRes != 0) {
@@ -60,12 +61,11 @@ class ThemeDelegateImpl : ThemeDelegate {
             }
         }
 
-        // One UI theme overlay — applied before dynamic color so Monet still wins on API 31+.
-        // The dark variant uses a lighter blue to maintain WCAG contrast on dark surfaces.
+        // One UI theme overlay is structure-only (shapes/typography, see themes_overlay.xml) -
+        // no color attrs, so it composes with whichever color source (dynamic/custom accent/
+        // default) was applied above instead of competing with it, and needs no day/night variant.
         if (ShizukuSettings.isOneUiThemeEnabled()) {
-            val isNight = context.resources.configuration.isNight()
-            val oneUiStyle = if (isNight) R.style.ThemeOverlay_OneUI_Dark else R.style.ThemeOverlay_OneUI
-            theme.applyStyle(oneUiStyle, true)
+            theme.applyStyle(R.style.ThemeOverlay_OneUI, true)
         }
 
         theme.applyStyle(ThemeHelper.getThemeStyleRes(context), true)

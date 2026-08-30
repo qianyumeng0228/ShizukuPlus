@@ -35,7 +35,7 @@
 
     <!-- UI Settings - One UI Theme -->
     <string name="settings_oneui_theme">One UI Style</string>
-    <string name="settings_oneui_theme_summary">Match Samsung One UI\'s design language — Samsung Blue accent, large rounded corners, and bold typography</string>
+    <string name="settings_oneui_theme_summary">Match Samsung One UI\'s design language — large rounded corners and bold typography. Color is unaffected; use Material You or a custom accent above for that.</string>
     <string name="settings_one_handed_mode">One-Handed Mode</string>
     <string name="settings_one_handed_mode_summary">Shift interactive content toward the bottom of the screen for comfortable thumb reach</string>
 
@@ -64,16 +64,18 @@
     </string-array>
 
     <string-array name="shape_styles">
-        <item>Zen (Artistic)</item>
+        <item>Zen (Leaf/Droplet)</item>
         <item>Modern (Material 3)</item>
         <item>Classic (Material 2)</item>
         <item>Organic (Squircle)</item>
+        <item>Cut (Angular)</item>
     </string-array>
     <string-array name="shape_styles_value">
         <item>zen</item>
         <item>modern</item>
         <item>classic</item>
         <item>squircle</item>
+        <item>cut</item>
     </string-array>
 
     <string-array name="animation_intensities">
@@ -433,6 +435,21 @@
     <string name="settings_plus_app_setup_title">Setup Integration</string>
     <string name="settings_plus_app_open">Open App</string>
     <string name="settings_plus_learn_more">Learn more</string>
+    <string name="settings_plus_feature_help_enable">Enable feature</string>
+    <string name="settings_plus_feature_help_close">Close</string>
+    <string name="diagnostics_dismiss">Dismiss</string>
+    <string name="diagnostics_warning_dhizuku_not_owner">Dhizuku Mode is enabled but the Device Owner component is not active. Tap to resolve.</string>
+    <string name="diagnostics_warning_shadow_binder_no_apps">Shadow Binder is enabled but no apps are selected to hide. Tap to select.</string>
+    <string name="diagnostics_warning_battery_optimization">Battery optimization is active. Shizuku may be killed in the background. Tap to exempt.</string>
+    <string name="diagnostics_battery_settings_open_failed">Could not open battery settings</string>
+    <string name="diagnostics_shadow_binder_navigate_hint">Go to Feature Hub → Security &amp; Access → Shadow Binder to select apps</string>
+    <string name="diagnostics_device_owner_setup_title">Set Up Device Owner</string>
+    <string name="diagnostics_device_owner_setup_message">Dhizuku Mode requires this app to be the Device Owner.\n\nRun this command from your PC (USB debugging must be enabled):\n\n%1$s</string>
+    <string name="diagnostics_copy_command">Copy Command</string>
+    <string name="diagnostics_command_copied">Command copied</string>
+    <string name="diagnostics_disable_title">Disable Diagnostics?</string>
+    <string name="diagnostics_disable_message">This will hide the diagnostic warning panel. You can re-enable it anytime from advanced settings.</string>
+    <string name="diagnostics_disable_confirm">Disable</string>
     <string name="help_general_plus_summary"><![CDATA[<b>How Shizuku+ works with other apps</b><br><br>Shizuku+ provides <i>exclusive Plus features</i> (Storage Bridge, AI Bridge, Theming Bridge) accessible via this app and any third-party app explicitly targeting the Shizuku+ API (af.shizuku.plus.api).<br><br><b>Important:</b> Shizuku+ is fully backwards compatible with the original Shizuku API. Existing apps that use stock Shizuku (like SD Maid SE and SwiftBackup) will automatically discover and work with Shizuku+ without any developer updates required.<br><br><b>Using alongside stock Shizuku:</b> Only one service can run at a time. The Companion card on the home screen makes switching easy if you still have stock Shizuku installed, but it is recommended to uninstall stock Shizuku and use Shizuku+ exclusively.]]></string>
 
     <!-- Detailed Help Strings -->
@@ -773,6 +790,30 @@
     <string name="settings_category_material_you">Material You</string>
     <string name="settings_category_language">Language</string>
     <string name="settings_category_appearance">Appearance</string>
+    <string name="settings_main_category_capabilities">Capabilities</string>
+    <string name="settings_main_category_personalization">Personalization</string>
+    <string name="settings_main_category_system">System</string>
+    <string name="settings_main_nav_feature_hub_title">Feature Hub</string>
+    <string name="settings_main_nav_feature_hub_summary">Manage exclusive Plus capabilities</string>
+    <string name="settings_main_nav_root_compat_title">Root &amp; Compatibility</string>
+    <string name="settings_main_nav_root_compat_summary">ADB connection, SU bridge, rootless integration, and stock Shizuku compatibility</string>
+    <string name="settings_main_nav_appearance_summary">Theme, shapes, icons, motion, home layout, and language</string>
+    <string name="settings_main_nav_app_interactions_title">App Interactions</string>
+    <string name="settings_main_nav_app_interactions_summary">Gestures, long-press actions, and install verification</string>
+    <string name="settings_main_nav_startup_behavior_title">Startup &amp; Behavior</string>
+    <string name="settings_main_nav_startup_behavior_summary">Boot options, watchdog, network, and activity status</string>
+    <string name="settings_main_nav_advanced_diagnostics_title">Advanced &amp; Diagnostics</string>
+    <string name="settings_main_nav_advanced_diagnostics_summary">Logs, ADB tools, and troubleshooting</string>
+    <string name="settings_main_nav_about_summary">Version, licenses, and updates</string>
+    <string name="settings_accent_violet_applied">Midnight Violet applied</string>
+    <string name="settings_accent_green_applied">Forest Green applied</string>
+    <string name="settings_accent_crimson_applied">Crimson Rose applied</string>
+    <string name="settings_accent_ocean_applied">Deep Ocean applied</string>
+    <string name="settings_accent_default_applied">Standard Blue (Default)</string>
+    <string name="fake_adb_pairing_title">Allow fake ADB connection?</string>
+    <string name="fake_adb_pairing_message">An app is trying to connect to Shizuku+ via the Fake Local ADB server.\n\nRSA key fingerprint:\n%1$s</string>
+    <string name="fake_adb_pairing_allow">Allow</string>
+    <string name="fake_adb_pairing_deny">Deny</string>
     <string name="settings_category_advanced">Advanced</string>
 
     <string name="settings_nav_behavior_summary">Start on boot, Watchdog, and TCP mode</string>
@@ -810,6 +851,8 @@
     <string name="accessibility_button_restart">Restart button</string>
     <string name="accessibility_button_view_command">View command button</string>
     <string name="accessibility_button_view_guide">View guide button</string>
+    <string name="accessibility_state_expanded">Expanded</string>
+    <string name="accessibility_state_collapsed">Collapsed</string>
     <string name="accessibility_button_view_intents">View intents button</string>
     <string name="accessibility_button_pairing">Pairing button</string>
     <string name="accessibility_button_developer_options">Developer options button</string>

@@ -56,7 +56,7 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
             activeWarnings.add(
                 WarningItem(
                     id = "dhizuku_not_owner",
-                    messageRes = R.string.diagnostics_warning_dhizuku_owner
+                    message = context.getString(R.string.diagnostics_warning_dhizuku_not_owner)
                 )
             )
         }
@@ -66,7 +66,7 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
             activeWarnings.add(
                 WarningItem(
                     id = "shadow_binder_no_apps",
-                    messageRes = R.string.diagnostics_warning_shadow_binder
+                    message = context.getString(R.string.diagnostics_warning_shadow_binder_no_apps)
                 )
             )
         }
@@ -76,7 +76,7 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
             activeWarnings.add(
                 WarningItem(
                     id = "battery_optimization",
-                    messageRes = R.string.diagnostics_warning_battery_optimization
+                    message = context.getString(R.string.diagnostics_warning_battery_optimization)
                 )
             )
         }
@@ -93,7 +93,7 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
         val inflater = LayoutInflater.from(context)
         for (warning in visibleWarnings) {
             val itemView = inflater.inflate(R.layout.layout_diagnostic_item, listContainer, false)
-            itemView.findViewById<TextView>(R.id.diagnostic_text).text = context.getString(warning.messageRes)
+            itemView.findViewById<TextView>(R.id.diagnostic_text).text = warning.message
 
             // Set action handling on tapping the warning card itself
             itemView.setOnClickListener {
@@ -112,7 +112,7 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 context.startActivity(intent)
                             } catch (anfe: Exception) {
-                                Toast.makeText(context, R.string.diagnostics_open_battery_failed, Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, R.string.diagnostics_battery_settings_open_failed, Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -128,7 +128,7 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
                         if (!opened) {
                             Toast.makeText(
                                 context,
-                                R.string.diagnostics_shadow_binder_select_apps_hint,
+                                R.string.diagnostics_shadow_binder_navigate_hint,
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -137,16 +137,14 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
                         val cmd = "adb shell dpm set-device-owner " +
                             "${context.packageName}/.admin.DhizukuAdminReceiver"
                         MaterialAlertDialogBuilder(context)
-                            .setTitle(R.string.diagnostics_setup_device_owner_title)
-                            .setMessage(context.getString(R.string.diagnostics_device_owner_message, cmd))
+                            .setTitle(R.string.diagnostics_device_owner_setup_title)
+                            .setMessage(context.getString(R.string.diagnostics_device_owner_setup_message, cmd))
                             .setPositiveButton(R.string.diagnostics_copy_command) { _, _ ->
                                 val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                cm.setPrimaryClip(
-                                    ClipData.newPlainText(context.getString(R.string.diagnostics_clipboard_label), cmd)
-                                )
+                                cm.setPrimaryClip(ClipData.newPlainText("dpm command", cmd))
                                 Toast.makeText(context, R.string.diagnostics_command_copied, Toast.LENGTH_SHORT).show()
                             }
-                            .setNegativeButton(R.string.action_dismiss, null)
+                            .setNegativeButton(R.string.diagnostics_dismiss, null)
                             .show()
                     }
                 }
@@ -164,11 +162,11 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
             MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.diagnostics_disable_title)
                 .setMessage(R.string.diagnostics_disable_message)
-                .setPositiveButton(R.string.diagnostics_disable_button) { _, _ ->
+                .setPositiveButton(R.string.diagnostics_disable_confirm) { _, _ ->
                     sp?.edit()?.putBoolean("diagnostics_enabled", false)?.apply()
                     notifyChanged()
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(android.R.string.cancel, null)
                 .show()
         }
     }
@@ -191,5 +189,5 @@ class DiagnosticsDashboardPreference @JvmOverloads constructor(
         }
     }
 
-    private data class WarningItem(val id: String, val messageRes: Int)
+    private data class WarningItem(val id: String, val message: String)
 }

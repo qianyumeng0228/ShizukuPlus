@@ -21,8 +21,25 @@ object ShizukuStateMachine {
 
     enum class State { STARTING, RUNNING, STOPPING, STOPPED, CRASHED }
 
-    private var state = AtomicReference<State>(State.STOPPED)
+    // Seeded from the last persisted settled state (see the persistence hook in transition()),
+    // not a hardcoded STOPPED - a freshly cold-started process (e.g. WatchdogAlarmReceiver reviving
+    // the app after an OEM freezer killed it, #417) otherwise has no way to tell "the server was
+    // RUNNING when this process died" apart from "the user deliberately stopped it": both would
+    // read as the in-memory default, and update() below would silently report STOPPED for an actual
+    // crash, so the watchdog's CRASHED-triggered restart would never fire for exactly the case it
+    // exists to handle.
+    private var state = AtomicReference<State>(loadPersistedSettledState())
     private val listeners = CopyOnWriteArrayList<(State) -> Unit>()
+
+    private fun loadPersistedSettledState(): State = try {
+        when (ShizukuSettings.getLastSettledState()) {
+            State.RUNNING.name -> State.RUNNING
+            State.CRASHED.name -> State.CRASHED
+            else -> State.STOPPED
+        }
+    } catch (e: Exception) {
+        State.STOPPED
+    }
 
     init {
         Shizuku.addBinderReceivedListenerSticky(
@@ -79,6 +96,14 @@ object ShizukuStateMachine {
                 } catch (e: Exception) {
                     Timber.tag("ShizukuStateMachine").w(e, "Failed to dispatch automation event")
                 }
+
+                // Persist so a future cold-started process (see loadPersistedSettledState() above)
+                // can tell a crash from a deliberate stop instead of defaulting to "assume stopped".
+                try {
+                    ShizukuSettings.setLastSettledState(newState.name)
+                } catch (e: Exception) {
+                    Timber.tag("ShizukuStateMachine").w(e, "Failed to persist settled state")
+                }
             }
 
             // Broadcast state change for widgets and other receivers
@@ -134,6 +159,13 @@ object ShizukuStateMachine {
             currentState == State.STARTING -> State.STARTING
             currentState == State.STOPPING -> State.STOPPING
             currentState == State.CRASHED -> State.CRASHED
+            // Was RUNNING (or, thanks to loadPersistedSettledState(), a freshly cold-started
+            // process that persisted RUNNING before it died) and the binder isn't answering: that's
+            // a crash, not a stop. Previously fell into the `else -> STOPPED` branch below, which
+            // WatchdogService's flow collector (only listens for CRASHED) silently ignores - the
+            // watchdog's external re-arm (#417) never restarted anything because every unexpected
+            // death got misreported as an intentional stop.
+            currentState == State.RUNNING -> State.CRASHED
             else -> State.STOPPED
         }
         set(state)
