@@ -13,7 +13,9 @@ import androidx.recyclerview.widget.RecyclerView
 import af.shizuku.manager.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -101,7 +103,7 @@ fun HomeScreen(
             top = innerPadding.calculateTopPadding(),
             bottom = innerPadding.calculateBottomPadding() + 72.dp
         )
-        AnimatedGradientBackground {
+        af.shizuku.manager.app.WallpaperBackground {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -130,39 +132,6 @@ fun HomeScreen(
         }
     }
 }
-}
-
-@Composable
-fun AnimatedGradientBackground(content: @Composable () -> Unit) {
-    val animationsEnabled = ShizukuSettings.isExpressiveAnimationsEnabled()
-    val infiniteTransition = rememberInfiniteTransition()
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        // Clamp to a static value when expressive animations are disabled, matching every
-        // other animated element in the app and avoiding a perpetual recomposition/battery cost.
-        targetValue = if (animationsEnabled) 1f else 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(15000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
-    val color1 = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f + 0.05f * alpha)
-    val color2 = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.03f + 0.05f * (1f - alpha))
-    val color3 = MaterialTheme.colorScheme.secondary.copy(alpha = 0.03f)
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.sweepGradient(
-                    colors = listOf(color1, color2, color3, color1),
-                    center = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY) // Sweep from bottom corner
-                )
-            )
-    ) {
-        content()
-    }
 }
 
 @Composable

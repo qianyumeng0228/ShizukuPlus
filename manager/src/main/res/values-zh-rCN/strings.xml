@@ -152,6 +152,11 @@
     <string name="settings_start_on_boot_bug">由于 Android 11-12
         中的一个漏洞，无线调试不会记住任何授权网络。\n\n每次重启时，当授权对话框弹出时，点击“允许”重新授权网络。</string>
     <string name="settings_use_system_color">使用系统主题颜色</string>
+    <string name="settings_wallpaper">壁纸</string>
+    <string name="settings_wallpaper_summary">背景壁纸主题</string>
+    <string name="settings_wallpaper_white_miku">白色初音</string>
+    <string name="settings_wallpaper_black_miku">黑色初音</string>
+    <string name="settings_wallpaper_original">原版</string>
     <string name="settings_watchdog">Watchdog</string>
     <string name="settings_watchdog_summary">如果 Shizuku 崩溃，则自动重启</string>
     <string name="settings_tcp_mode">TCP 模式</string>

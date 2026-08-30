@@ -75,7 +75,12 @@ fun SettingsScreen(
         label = "settingsOneHandedScale"
     )
 
-    Scaffold(
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Wallpaper page background (shared with home), respecting the wallpaper-theme setting.
+        af.shizuku.manager.app.WallpaperBackground { }
+
+        Scaffold(
+            containerColor = Color.Transparent,
         topBar = {
             if (isOneUi && !isSearchActive) {
                 LargeTopAppBar(
@@ -263,6 +268,7 @@ fun SettingsScreen(
                 }
             }
         }
+    }
     }
 }
 

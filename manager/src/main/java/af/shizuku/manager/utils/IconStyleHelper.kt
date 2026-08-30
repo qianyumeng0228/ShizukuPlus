@@ -214,6 +214,10 @@ object IconStyleHelper {
      */
     fun applyToStatusCardIcon(imageView: ImageView, pillColor: Int, tintColor: Int) {
         val context = imageView.context
+        // CardIcon.Droplet leaves a backgroundTint (?colorTertiaryContainer) that would re-tint our
+        // newly-assigned pill with a mismatched color (e.g. a blue pill on a pink error card).
+        // Clear it so the pill actually renders in pillColor and blends with the card.
+        imageView.backgroundTintList = null
         imageView.background = pillBackground(context, pillColor)
         imageView.imageTintList = ColorStateList.valueOf(tintColor)
         imageView.setPadding(0, 0, 0, 0)

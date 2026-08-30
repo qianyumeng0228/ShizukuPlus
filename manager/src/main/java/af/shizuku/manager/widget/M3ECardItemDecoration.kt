@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import af.shizuku.manager.R
+import af.shizuku.manager.ktx.cardSurfaceColor
 import af.shizuku.manager.ktx.themeColor
 import af.shizuku.manager.ktx.themeCornerSizePx
 
@@ -24,7 +25,7 @@ abstract class M3ECardItemDecoration(context: Context) : RecyclerView.ItemDecora
     protected val density = context.resources.displayMetrics.density
 
     init {
-        cardPaint.color = context.themeColor(R.attr.colorSurfaceContainerHigh)
+        cardPaint.color = context.cardSurfaceColor()
         dividerPaint.color = context.themeColor(R.attr.colorOutlineVariant)
         dividerPaint.strokeWidth = 1f * density
     }

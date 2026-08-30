@@ -94,4 +94,16 @@
         <item>OCEAN</item>
     </string-array>
 
+    <string-array name="wallpaper_themes">
+        <item>@string/settings_wallpaper_white_miku</item>
+        <item>@string/settings_wallpaper_black_miku</item>
+        <item>@string/settings_wallpaper_original</item>
+    </string-array>
+
+    <string-array name="wallpaper_themes_value">
+        <item>white_miku</item>
+        <item>black_miku</item>
+        <item>original</item>
+    </string-array>
+
 </resources>

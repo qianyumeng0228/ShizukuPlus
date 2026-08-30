@@ -26,6 +26,25 @@ fun Context.themeColor(@AttrRes attr: Int): Int {
 }
 
 /**
+ * Alpha applied to card surfaces while a Miku wallpaper theme is active, so the wallpaper shows
+ * through the cards. The original theme keeps the stock opaque colorSurfaceContainerHigh.
+ */
+private const val CARD_BG_ALPHA = 0.72f
+
+/**
+ * The background color for card surfaces. Under the Miku wallpaper themes (white/black) the cards
+ * are made translucent so the wallpaper shows through; the "original" theme keeps the stock opaque
+ * colorSurfaceContainerHigh exactly as it was before the beautification.
+ */
+@ColorInt
+fun Context.cardSurfaceColor(): Int {
+    val base = themeColor(com.google.android.material.R.attr.colorSurfaceContainerHigh)
+    val theme = af.shizuku.manager.ShizukuSettings.getWallpaperTheme()
+    if (theme == af.shizuku.manager.ShizukuSettings.WALLPAPER_THEME_ORIGINAL) return base
+    return androidx.core.graphics.ColorUtils.setAlphaComponent(base, (CARD_BG_ALPHA * 255f).toInt())
+}
+
+/**
  * Resolves a `?attr/shapeAppearanceCorner*` theme attribute to its absolute corner size in
  * pixels, so Canvas-drawn (non-MaterialCardView) shapes can follow the Shape Style setting too.
  * Assumes the referenced ShapeAppearance uses an absolute cornerSize (true for every

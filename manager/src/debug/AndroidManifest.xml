@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only manifest overrides. The debug build carries applicationIdSuffix ".debug"
+  (af.shizuku.plus.api.debug) so it installs ALONGSIDE the store build instead of replacing it.
+  Because it is a separate package, it must not redeclare the fixed-name permissions that the
+  store build already owns (af.shizuku.plus.permission.MANAGER and af.shizuku.plus.permission.API_V23);
+  redeclaring them fails install with INSTALL_FAILED_DUPLICATE_PERMISSION.
+
+  (The Dhizuku provider no longer needs special handling here: its authority is made
+  package-scoped for the debug build through manifestPlaceholders.dhizukuAuthorities.)
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <permission
+        android:name="af.shizuku.plus.permission.MANAGER"
+        tools:node="remove" />
+
+    <permission
+        android:name="af.shizuku.plus.permission.API_V23"
+        tools:node="remove" />
+
+</manifest>

@@ -96,6 +96,28 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
     }
 
     public static ApplicationInfo getManagerApplicationInfo() {
+        // Self-resolution first: the manager is the app that embeds this server, so when the
+        // server runs from an app whose applicationId differs from the compiled-in defaults
+        // (e.g. a debug/test build with applicationIdSuffix = ".debug"), the only way to find
+        // itself is to derive the package from the APK the server was launched from
+        // (-Djava.class.path, set by the native starter). Guarded so it never changes behaviour
+        // for the stock Plus / Drop-In builds: the derived package only wins when it is a real
+        // installed package AND differs from both default ids (in the normal builds it equals
+        // MANAGER_APPLICATION_ID, so this branch is skipped entirely).
+        try {
+            String self = deriveSelfManagerApplicationId();
+            if (self != null
+                    && !self.equals(MANAGER_APPLICATION_ID)
+                    && !self.equals(ServerConstants.DROPIN_APPLICATION_ID)) {
+                ApplicationInfo selfAi = Android17Compat.getApplicationInfo(self, 0, 0);
+                if (selfAi != null) {
+                    MANAGER_APPLICATION_ID = self;
+                    return selfAi;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+
         ApplicationInfo ai = Android17Compat.getApplicationInfo(MANAGER_APPLICATION_ID, 0, 0);
         if (ai != null) return ai;
 
@@ -109,6 +131,37 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
             return dropinAi;
         }
         return null;
+    }
+
+    /**
+     * Derives the package name of the app this server process was launched from. The native
+     * starter (manager/src/main/jni/starter.cpp) launches app_process with
+     * {@code -Djava.class.path=<manager.apk>} (and {@code -Dshizuku.library.path=<apk dir>/lib/<abi>}),
+     * so the APK path is available from the classpath. From a path such as
+     * {@code /data/app/~~xx/af.shizuku.plus.api.debug-abc/base.apk} the package is the parent
+     * directory name with everything after the last '-' stripped. Returns null when it cannot be
+     * derived reliably.
+     */
+    private static String deriveSelfManagerApplicationId() {
+        String cp = System.getProperty("java.class.path");
+        if (cp == null || cp.isEmpty()) cp = System.getenv("CLASSPATH");
+        if (cp == null || cp.isEmpty()) return null;
+        String apk = cp.split(":")[0];
+        if (apk == null || apk.isEmpty() || !apk.endsWith(".apk")) return null;
+        int slash = apk.lastIndexOf('/');
+        int slashBack = apk.lastIndexOf('\\');
+        int dirEnd = Math.max(slash, slashBack);
+        if (dirEnd < 0) return null;
+        String dirName = apk.substring(0, dirEnd);
+        int parentSlash = dirName.lastIndexOf('/');
+        int parentSlashBack = dirName.lastIndexOf('\\');
+        int parentStart = Math.max(parentSlash, parentSlashBack) + 1;
+        String seg = dirName.substring(parentStart);
+        int dash = seg.lastIndexOf('-');
+        if (dash <= 0) return null;
+        String pkg = seg.substring(0, dash);
+        if (pkg.indexOf('.') < 0 || pkg.contains("/") || pkg.contains("\\")) return null;
+        return pkg;
     }
 
     @SuppressWarnings({"FieldCanBeLocal"})

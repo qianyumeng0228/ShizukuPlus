@@ -578,11 +578,14 @@ class ShizukuApplication : Application(), Configuration.Provider {
 
         // 4. Strict mode for debugging (DEBUG only)
         if (BuildConfig.DEBUG) {
+            // NOTE: penaltyFlashScreen() intentionally omitted — it flashes a red border around
+            // the whole screen on every main-thread disk/preference I/O violation, which is
+            // extremely intrusive when tapping through Settings. penaltyLog() still surfaces the
+            // violations in logcat for debugging.
             android.os.StrictMode.setThreadPolicy(
                 android.os.StrictMode.ThreadPolicy.Builder()
                     .detectAll()
                     .penaltyLog()
-                    .penaltyFlashScreen()
                     .build()
             )
             android.os.StrictMode.setVmPolicy(
@@ -598,6 +601,18 @@ class ShizukuApplication : Application(), Configuration.Provider {
         // 5. Initialize settings and managers
         try {
             initializeManagers()
+
+            // Shizuku+ beautification: apply the wallpaper-forced color scheme on every app start
+            // (white miku -> light, black miku -> dark) so home and settings pages stay consistent
+            // even after the process restarts. AppCompatDelegate persists the mode, but forcing it
+            // here guarantees correctness right after install/first launch too. Combined with the
+            // DynamicColors.Light/Dark overlay (see ThemeDelegateImpl), the forced config makes the
+            // settings page render light/dark to match the wallpaper theme.
+            val wallpaperForced = ShizukuSettings.getWallpaperForcedNightMode()
+            if (wallpaperForced != -1) {
+                AppCompatDelegate.setDefaultNightMode(wallpaperForced)
+            }
+
             if (ShizukuSettings.getWatchdog() && ShizukuSettings.isLiveActivityEnabled()) {
                 try {
                     // startForegroundService() is required on API 26+ to start from background;

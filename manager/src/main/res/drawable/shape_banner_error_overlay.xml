@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Translucent red "not activated" wash for the merged hero card, shown while Shizuku is
+     stopped. A white gradient that the ViewHolder tints with the theme's errorContainer color,
+     so it adapts to both light and dark themes (pink in light, deep red in dark). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:startColor="#4DFFFFFF"
+        android:centerColor="#8CFFFFFF"
+        android:centerX="0.42"
+        android:endColor="#D9FFFFFF" />
+</shape>

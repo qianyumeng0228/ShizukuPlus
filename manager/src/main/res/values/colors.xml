@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="notification">#3F51B5</color>
+    <color name="notification">#00A9A5</color>
 
-    <color name="app_color_light">#3F51B5</color>
-    <color name="app_color_dark">#B1B8DF</color>
+    <color name="app_color_light">#00A9A5</color>
+    <color name="app_color_dark">#80DEEA</color>
 
     <color name="status_ok">#4CAF50</color>
     <color name="status_error">#F44336</color>

@@ -52,10 +52,34 @@ class SettingsActivity : AppActivity(), PreferenceFragmentCompat.OnPreferenceSta
                         }
                     },
                     onContainerCreated = {
-                        if (savedInstanceState == null && supportFragmentManager.findFragmentById(R.id.fragment_container) == null) {
-                            supportFragmentManager.beginTransaction()
-                                .replace(R.id.fragment_container, SettingsFragment())
-                                .commit()
+                        val frag = supportFragmentManager.findFragmentById(R.id.fragment_container)
+                        val container = findViewById<android.view.ViewGroup>(R.id.fragment_container)
+                        // On recreation after a theme/wallpaper switch (setDefaultNightMode triggers
+                        // activity recreate), the FragmentManager restores the fragment but its view
+                        // is left orphaned (container has 0 children) because Compose creates the
+                        // container after the fragment-restoration phase. Re-parent the orphaned view
+                        // so the settings modules don't vanish (blank page with only the wallpaper).
+                        if (container == null || container.childCount == 0) {
+                            val orphaned = frag?.view
+                            if (container != null && orphaned != null) {
+                                (orphaned.parent as? android.view.ViewGroup)?.removeView(orphaned)
+                                container.addView(
+                                    orphaned,
+                                    android.view.ViewGroup.LayoutParams(
+                                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                        android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                                    )
+                                )
+                            } else if (frag != null) {
+                                supportFragmentManager.beginTransaction()
+                                    .detach(frag)
+                                    .attach(frag)
+                                    .commit()
+                            } else {
+                                supportFragmentManager.beginTransaction()
+                                    .replace(R.id.fragment_container, SettingsFragment())
+                                    .commit()
+                            }
                         }
                     }
                 )

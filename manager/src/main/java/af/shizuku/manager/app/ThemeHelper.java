@@ -23,6 +23,11 @@ public class ThemeHelper {
     }
 
     public static boolean isUsingSystemColor() {
+        // Original default (true): the app follows the system dynamic color (Monet). The
+        // DynamicColors.Light/Dark overlay applied in onApplyUserThemeResource is also what
+        // flips the (otherwise always-dark) settings base theme to light/dark — keeping this
+        // default true is required for the wallpaper theme (white/black miku) to drive the
+        // global light/dark color scheme correctly.
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 && ShizukuSettings.getPreferences().getBoolean(ShizukuSettings.Keys.KEY_USE_SYSTEM_COLOR, true);
     }

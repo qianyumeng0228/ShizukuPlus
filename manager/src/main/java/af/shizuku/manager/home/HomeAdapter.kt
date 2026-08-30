@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import af.shizuku.manager.ShizukuSettings
+import af.shizuku.manager.ktx.cardSurfaceColor
 import af.shizuku.manager.management.AppsViewModel
 import af.shizuku.manager.model.ServiceStatus
 import af.shizuku.manager.utils.EnvironmentUtils
@@ -23,6 +24,7 @@ class HomeAdapter(
 ) : IdBasedRecyclerViewAdapter(ArrayList()) {
 
     companion object {
+        const val ID_BANNER = -1L
         const val ID_STATUS = 0L
         const val ID_APPS = 1L
         const val ID_TERMINAL = 2L
@@ -195,7 +197,10 @@ class HomeAdapter(
 
         // Fixed cards
         var fixedCardCount = 0
-        addItem(ServerStatusViewHolder.CREATOR, status, ID_STATUS); fixedCardCount++
+        // Merged hero header: the themed wallpaper banner with the live server status overlaid
+        // on a readable scrim (replaces the previously separate banner + status cards, keeping
+        // all status-card functionality). Fixed, not draggable/hideable.
+        addItem(HomeBannerStatusViewHolder.CREATOR, status, ID_STATUS); fixedCardCount++
         if (isOriginalShizukuRunning) {
             addItem(startStockCreator, null, ID_START_VIA_STOCK); fixedCardCount++
         }
@@ -250,6 +255,10 @@ class HomeAdapter(
 
         super.onBindViewHolder(holder, position)
 
+        // Miku wallpaper themes make the card surfaces translucent so the wallpaper shows through;
+        // the original theme keeps the stock opaque card background.
+        applyCardSurface(holder)
+
         // M3E entrance animation — only on first appearance per card id, not every recycle.
         if (!animatedIds.add(id)) {
             holder.itemView.alpha = 1f
@@ -274,6 +283,16 @@ class HomeAdapter(
             view.alpha = 1f
             view.translationY = 0f
         }
+    }
+
+    /**
+     * Applies the themed card surface color to a non-hero card container. The merged hero header
+     * (HomeBannerStatusViewHolder) keeps its own transparent banner background, so it is skipped.
+     */
+    private fun applyCardSurface(holder: BaseViewHolder<*>) {
+        if (holder is HomeBannerStatusViewHolder) return
+        val card = holder.itemView as? com.google.android.material.card.MaterialCardView ?: return
+        card.setCardBackgroundColor(holder.itemView.context.cardSurfaceColor())
     }
 
     fun moveItem(fromPos: Int, toPos: Int) {

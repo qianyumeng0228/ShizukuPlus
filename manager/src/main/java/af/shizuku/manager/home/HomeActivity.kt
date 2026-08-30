@@ -79,6 +79,10 @@ open class HomeActivity : AppActivity(), MavericksView {
     private val adapter by unsafeLazy { HomeAdapter(homeModel, appsModel, lifecycleScope) }
     private var versionClickCount = 0
 
+    // Bumped on every onResume to force the Compose content to recompose, so settings changed
+    // while in SettingsActivity (e.g. the wallpaper theme) are picked up when returning home.
+    private var resumeTick by mutableStateOf(0)
+
     // Registered unconditionally (required before onStart); only invoked on API 33+. The
     // shell-consent notification (#377) silently no-ops without this permission, reproducing
     // the original BAL timeout with no visible cause - request it once here so every user gets
@@ -192,6 +196,8 @@ open class HomeActivity : AppActivity(), MavericksView {
 
         setContent {
             val context = LocalContext.current
+            // Re-read settings when returning to the home screen (see resumeTick above).
+            androidx.compose.runtime.remember(resumeTick) { }
             af.shizuku.core.ui.compose.AppTheme(
                 darkTheme = androidx.compose.foundation.isSystemInDarkTheme(),
                 isBlackNightTheme = af.shizuku.manager.app.ThemeHelper.isBlackNightTheme(context),
@@ -263,7 +269,9 @@ open class HomeActivity : AppActivity(), MavericksView {
                         if (!view.isAttachedToWindow) return@post
 
                         if (ShizukuSettings.isExpressiveAnimationsEnabled()) {
-                            val statusCard = view.findViewHolderForAdapterPosition(0)?.itemView
+                            // Position 1 is the ServerStatus card — position 0 is the fixed
+                            // wallpaper hero banner added by the beautification.
+                            val statusCard = view.findViewHolderForAdapterPosition(1)?.itemView
                             val cx = view.width / 2
                             val cy = statusCard?.let { it.top + it.height / 2 } ?: 100
                             val finalRadius = Math.hypot(view.width.toDouble(), view.height.toDouble()).toFloat()
@@ -555,6 +563,9 @@ open class HomeActivity : AppActivity(), MavericksView {
 
     override fun onResume() {
         super.onResume()
+        // Recompute Compose content so theme/wallpaper setting changes made in SettingsActivity
+        // take effect on the home screen without a full activity recreate.
+        resumeTick++
         // Force refresh status on resume
         checkServerStatus()
         // Also reload apps list

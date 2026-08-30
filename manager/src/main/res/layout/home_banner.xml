@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Home hero banner: shows the themed wallpaper (light/dark auto-selected via drawable-night)
+  as a rounded header above the status card. Purely decorative.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/banner_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="false"
+    android:focusable="false"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp"
+    app:shapeAppearanceOverlay="?attr/shapeAppearanceCornerExtraLarge">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/banner_image"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:contentDescription="@string/home_banner_description"
+            android:scaleType="centerCrop"
+            android:src="@drawable/wallpaper_banner"
+            tools:ignore="ContentDescription" />
+
+        <!-- Subtle bottom scrim for depth / blending into the page background -->
+        <View
+            android:id="@+id/banner_scrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/shape_banner_scrim"
+            android:importantForAccessibility="no" />
+
+    </FrameLayout>
+
+</com.google.android.material.card.MaterialCardView>

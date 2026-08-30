@@ -22,7 +22,13 @@ android {
         versionName rootProject.ext.versionName
         def sentryDsn = project.findProperty('SENTRY_DSN') ?: ''
         buildConfigField "String", "SENTRY_DSN", "\"${sentryDsn}\""
-        manifestPlaceholders = [sentryDsn: sentryDsn]
+        manifestPlaceholders = [
+            sentryDsn: sentryDsn,
+            // Dhizuku content-provider authorities. Release keeps the well-known fixed value;
+            // the debug build (applicationIdSuffix ".debug") overrides this to a package-scoped
+            // value so it can install alongside the store build without a provider conflict.
+            dhizukuAuthorities: "com.rosan.dhizuku;com.rosan.dhizuku.provider",
+        ]
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         multiDexKeepProguard file("multidex-keep.pro")
@@ -67,6 +73,12 @@ android {
     buildTypes {
         debug {
             signingConfig = signingConfigs.sign
+            // Debug/test builds install alongside the store build instead of replacing it:
+            // af.shizuku.plus.api -> af.shizuku.plus.api.debug
+            applicationIdSuffix = ".debug"
+            // Unique Dhizuku provider authorities for the side-by-side debug build (see
+            // defaultConfig.manifestPlaceholders.dhizukuAuthorities).
+            manifestPlaceholders = [dhizukuAuthorities: "af.shizuku.plus.api.debug.dhizuku;af.shizuku.plus.api.debug.dhizuku.provider"]
         }
         release {
             signingConfig = signingConfigs.sign
@@ -129,7 +141,8 @@ autoResConfig {
 materialThemeBuilder {
     themes {
         shizuku {
-            primaryColor = "#3F51B5"
+            // 初音未来 teal-cyan (Miku-style accent) - replaced the stock indigo #3F51B5
+            primaryColor = "#00A9A5"
             lightThemeFormat = "Theme.Material3Expressive.Light.%s"
             lightThemeParent = "Theme.Material3Expressive.Light"
             darkThemeFormat = "Theme.Material3Expressive.Dark.%s"

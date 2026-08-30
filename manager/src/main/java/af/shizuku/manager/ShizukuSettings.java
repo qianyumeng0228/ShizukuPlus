@@ -135,6 +135,7 @@ public class ShizukuSettings {
         public static final String KEY_BLUR_UI = "blur_ui_enabled";
         public static final String KEY_ONEUI_THEME = "oneui_theme_enabled";
         public static final String KEY_ONE_HANDED_MODE = "one_handed_mode";
+        public static final String KEY_WALLPAPER_THEME = "wallpaper_theme";
 
         // Migration (Shizuku+ additions)
         public static final String KEY_MIGRATION_OFFERED = "migration_offered";
@@ -246,6 +247,41 @@ public class ShizukuSettings {
 
     public static boolean isOneHandedModeEnabled() {
         return getPreferences().getBoolean(Keys.KEY_ONE_HANDED_MODE, false);
+    }
+
+    // Wallpaper theme (Shizuku+ beautification): "white_miku" = light Miku wallpaper,
+    // "black_miku" = dark cyberpunk Miku wallpaper, "original" = no wallpaper (stock theme bg).
+    public static final String WALLPAPER_THEME_WHITE_MIKU = "white_miku";
+    public static final String WALLPAPER_THEME_BLACK_MIKU = "black_miku";
+    public static final String WALLPAPER_THEME_ORIGINAL = "original";
+
+    public static String getWallpaperTheme() {
+        return getPreferences().getString(Keys.KEY_WALLPAPER_THEME, WALLPAPER_THEME_WHITE_MIKU);
+    }
+
+    public static void setWallpaperTheme(String value) {
+        getPreferences().edit().putString(Keys.KEY_WALLPAPER_THEME, value).apply();
+    }
+
+    /**
+     * The app-wide color scheme forced by the selected wallpaper theme.
+     * <p>
+     * The wallpaper setting doubles as the global theme control (Shizuku+ beautification):
+     * "white miku" forces the light color scheme, "black miku" forces the dark scheme, and
+     * "original" forces nothing (the app follows the user's own 主题/light/dark setting).
+     *
+     * @return MODE_NIGHT_NO / MODE_NIGHT_YES to force a scheme, or -1 when the wallpaper
+     *         selection does not force one ("original").
+     */
+    @AppCompatDelegate.NightMode
+    public static int getWallpaperForcedNightMode() {
+        String theme = getWallpaperTheme();
+        if (WALLPAPER_THEME_WHITE_MIKU.equals(theme)) {
+            return AppCompatDelegate.MODE_NIGHT_NO;
+        } else if (WALLPAPER_THEME_BLACK_MIKU.equals(theme)) {
+            return AppCompatDelegate.MODE_NIGHT_YES;
+        }
+        return -1;
     }
 
     public static int getAnimationIntensity() {

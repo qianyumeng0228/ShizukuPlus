@@ -63,7 +63,10 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
             setOnPreferenceChangeListener { _, value ->
                 if (value is Int) {
                     if (ShizukuSettings.getNightMode() != value) {
-                        AppCompatDelegate.setDefaultNightMode(value)
+                        // An active wallpaper theme (white/black miku) forces the color scheme,
+                        // so the 主题 setting only takes effect in "original" wallpaper mode.
+                        val forced = ShizukuSettings.getWallpaperForcedNightMode()
+                        AppCompatDelegate.setDefaultNightMode(if (forced != -1) forced else value)
                         syncDependentVisibility()
                         applyTheme(requiresRecreate = true)
                     }
@@ -117,6 +120,24 @@ class PersonalizationSettingsFragment : BaseSettingsFragment() {
                 }
                 true
             }
+        }
+
+        // 1b. Wallpaper theme (Shizuku+ beautification): White Miku / Black Miku / Original.
+        // The wallpaper setting also drives the GLOBAL color scheme so home and settings stay
+        // consistent: white miku -> light everywhere, black miku -> dark everywhere,
+        // original -> the user's 主题 (light/dark) setting with the stock gradient background.
+        findPreference<Preference>("wallpaper_theme")?.setOnPreferenceChangeListener { _, newValue ->
+            if (newValue is String && ShizukuSettings.getWallpaperTheme() != newValue) {
+                ShizukuSettings.setWallpaperTheme(newValue)
+                val forced = ShizukuSettings.getWallpaperForcedNightMode()
+                AppCompatDelegate.setDefaultNightMode(
+                    if (forced != -1) forced else ShizukuSettings.getNightMode()
+                )
+                // setDefaultNightMode() recreates the activity itself when the effective mode
+                // changes; themeVersion++ covers the unchanged-mode case (wallpaper swap only).
+                applyTheme(requiresRecreate = false)
+            }
+            true
         }
 
         // 2. M3 Expressive Controls

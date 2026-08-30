@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Merged hero card: the themed wallpaper banner (light/dark auto-selected via drawable-night)
+  is the background, with the live server-status content overlaid on a readable bottom scrim.
+  Replaces the previously separate banner + status cards with one compact hero header while
+  keeping every status-card feature (status dot, title/summary, activity-log & diagnostics
+  chips, sentry-offline notice).
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/banner_status_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="false"
+    android:focusable="false"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp"
+    app:shapeAppearanceOverlay="?attr/shapeAppearanceCornerExtraLarge">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/banner_image"
+            android:layout_width="match_parent"
+            android:layout_height="224dp"
+            android:contentDescription="@string/home_banner_description"
+            android:scaleType="centerCrop"
+            android:src="@drawable/wallpaper_banner"
+            tools:ignore="ContentDescription" />
+
+        <!-- Readability scrim so the overlaid status text stays legible in both themes -->
+        <View
+            android:id="@+id/banner_scrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/shape_banner_status_scrim"
+            android:importantForAccessibility="no" />
+
+        <!-- Red "not activated" wash: visible while Shizuku is stopped (tinted with errorContainer
+             in code). Hidden once the service is running. -->
+        <View
+            android:id="@+id/error_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/shape_banner_error_overlay"
+            android:visibility="gone"
+            android:importantForAccessibility="no" />
+
+        <!-- Overlaid live status content -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="18dp"
+            android:duplicateParentState="true">
+
+            <ImageView
+                android:id="@android:id/icon"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:importantForAccessibility="yes"
+                android:contentDescription="@string/accessibility_icon_server_status"
+                android:transitionName="icon_server_status"
+                android:src="@drawable/ic_server_error_24"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.62" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp"
+                android:duplicateParentState="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@android:id/icon"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.62">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:duplicateParentState="true">
+
+                    <View
+                        android:id="@+id/status_indicator"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/shape_status_indicator" />
+
+                    <TextView
+                        android:id="@android:id/text1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textAppearance="?textAppearanceTitleLarge"
+                        android:textColor="?colorOnSurface"
+                        android:lineSpacingExtra="1sp"
+                        android:duplicateParentState="true"
+                        tools:text="Running (version 10)" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@android:id/text2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textAppearance="?textAppearanceLabelLarge"
+                    android:textColor="?colorOnSurfaceVariant"
+                    android:lineSpacingExtra="1sp"
+                    android:duplicateParentState="true"
+                    tools:text="Shizuku is running as ADB." />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/status_chips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:duplicateParentState="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/btn_activity_log"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_activity_log"
+                        android:visibility="gone"
+                        app:chipIcon="@drawable/ic_article_24"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/btn_diagnostics"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_diagnostics_category"
+                        android:visibility="gone"
+                        app:chipIcon="@drawable/ic_server_ok_24"
+                        tools:visibility="visible" />
+
+                </com.google.android.material.chip.ChipGroup>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_sentry_offline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/sentry_offline_notice_button"
+                    android:visibility="gone"
+                    android:textColor="?colorError"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </FrameLayout>
+
+</com.google.android.material.card.MaterialCardView>
