@@ -63,6 +63,7 @@
         <item>现代（Material 3）</item>
         <item>经典（Material 2）</item>
         <item>自然（圆角方形）</item>
+        <item>切角（棱角）</item>
     </string-array>
 
     <string-array name="animation_intensities">
@@ -70,5 +71,11 @@
         <item>轻微</item>
         <item>标准</item>
         <item>丰富</item>
+    </string-array>
+
+    <string-array name="wallpaper_themes">
+        <item>@string/settings_wallpaper_white_miku</item>
+        <item>@string/settings_wallpaper_black_miku</item>
+        <item>@string/settings_wallpaper_original</item>
     </string-array>
 </resources>

@@ -442,43 +442,49 @@ jobs:
           {
             echo "# ${TAG_NAME}"
             echo
+            MANUAL_NOTES_FILE="docs/zh-CN/latest-release-notes.md"
+            if [ -f "$MANUAL_NOTES_FILE" ]; then
+              cat "$MANUAL_NOTES_FILE"
+              echo
+            else
+              if [ -n "$PREV_TAG" ]; then
+                RANGE="${PREV_TAG}..HEAD"
+              else
+                RANGE="HEAD"
+              fi
+              echo
+
+              ALL_COMMITS=$(git log "$RANGE" --no-merges --pretty=format:"- %s (%h)" || true)
+
+              SECURITY=$(printf '%s\n' "$ALL_COMMITS" | grep -iE "^- (fix\(security\)|security)" || true)
+              BREAKING=$(printf '%s\n' "$ALL_COMMITS" | grep -iE "BREAKING" || true)
+              ADDED=$(printf '%s\n' "$ALL_COMMITS" | grep -E "^- feat" | grep -vFf <(printf '%s\n%s' "$SECURITY" "$BREAKING") || true)
+              FIXED=$(printf '%s\n' "$ALL_COMMITS" | grep -E "^- fix" | grep -vFf <(printf '%s\n%s' "$SECURITY" "$BREAKING") || true)
+              OTHER=$(printf '%s\n' "$ALL_COMMITS" | grep -vE "^- (feat|fix)" | grep -vFf <(printf '%s\n%s' "$SECURITY" "$BREAKING") || true)
+
+              if [ -n "$SECURITY" ]; then echo "### Security"; echo "$SECURITY"; echo; fi
+              if [ -n "$BREAKING" ]; then echo "### Breaking"; echo "$BREAKING"; echo; fi
+              if [ -n "$ADDED" ]; then echo "### Added"; echo "$ADDED"; echo; fi
+              if [ -n "$FIXED" ]; then echo "### Fixed"; echo "$FIXED"; echo; fi
+              if [ -n "$OTHER" ]; then echo "### Other"; echo "$OTHER"; echo; fi
+
+              # Surface how many distinct GitHub issues this release touches. Promoting a
+              # release to MAJOR_RELEASE (see scripts/backfill_majors.py) stays a deliberate,
+              # curated call -- this is just a visible signal so an unusually issue-dense
+              # release is easy to notice instead of relying on remembering to check.
+              ISSUE_REFS=$(git log "$RANGE" --no-merges --pretty=format:"%s" | grep -oE '#[0-9]+' | sort -u | wc -l | tr -d ' ' || true)
+              if [ -n "$ISSUE_REFS" ] && [ "$ISSUE_REFS" -gt 0 ] 2>/dev/null; then
+                echo "_${ISSUE_REFS} distinct GitHub issue(s) referenced in this release._"
+                echo
+              fi
+            fi
+
             echo "## 下载选择"
             echo
             echo "- 标准版：\`Shizuku+-${TAG_NAME}.apk\`，包名 \`af.shizuku.plus.api\`。推荐大多数用户下载，可与原版 Shizuku 并存。"
             echo "- Drop-In 版：\`Shizuku+-Drop-In-${TAG_NAME}.apk\`，包名 \`moe.shizuku.privileged.api\`。用于替换原版 Shizuku，不能与原版 Shizuku 同时安装。"
             echo "- Compat-Hub 兼容中心：\`Shizuku+-Compat-Hub-${TAG_NAME}.apk\`，包名同为 \`moe.shizuku.privileged.api\`。这是轻量兼容辅助包，用于让只检测原版 Shizuku 包名的第三方应用识别 Shizuku+；通常无需手动下载，标准版应用内有安装入口。"
             echo
-
-            if [ -n "$PREV_TAG" ]; then
-              RANGE="${PREV_TAG}..HEAD"
-            else
-              RANGE="HEAD"
-            fi
-            echo
-
-            ALL_COMMITS=$(git log "$RANGE" --no-merges --pretty=format:"- %s (%h)" || true)
-
-            SECURITY=$(printf '%s\n' "$ALL_COMMITS" | grep -iE "^- (fix\(security\)|security)" || true)
-            BREAKING=$(printf '%s\n' "$ALL_COMMITS" | grep -iE "BREAKING" || true)
-            ADDED=$(printf '%s\n' "$ALL_COMMITS" | grep -E "^- feat" | grep -vFf <(printf '%s\n%s' "$SECURITY" "$BREAKING") || true)
-            FIXED=$(printf '%s\n' "$ALL_COMMITS" | grep -E "^- fix" | grep -vFf <(printf '%s\n%s' "$SECURITY" "$BREAKING") || true)
-            OTHER=$(printf '%s\n' "$ALL_COMMITS" | grep -vE "^- (feat|fix)" | grep -vFf <(printf '%s\n%s' "$SECURITY" "$BREAKING") || true)
-
-            if [ -n "$SECURITY" ]; then echo "### Security"; echo "$SECURITY"; echo; fi
-            if [ -n "$BREAKING" ]; then echo "### Breaking"; echo "$BREAKING"; echo; fi
-            if [ -n "$ADDED" ]; then echo "### Added"; echo "$ADDED"; echo; fi
-            if [ -n "$FIXED" ]; then echo "### Fixed"; echo "$FIXED"; echo; fi
-            if [ -n "$OTHER" ]; then echo "### Other"; echo "$OTHER"; echo; fi
-
-            # Surface how many distinct GitHub issues this release touches. Promoting a
-            # release to MAJOR_RELEASE (see scripts/backfill_majors.py) stays a deliberate,
-            # curated call -- this is just a visible signal so an unusually issue-dense
-            # release is easy to notice instead of relying on remembering to check.
-            ISSUE_REFS=$(git log "$RANGE" --no-merges --pretty=format:"%s" | grep -oE '#[0-9]+' | sort -u | wc -l | tr -d ' ' || true)
-            if [ -n "$ISSUE_REFS" ] && [ "$ISSUE_REFS" -gt 0 ] 2>/dev/null; then
-              echo "_${ISSUE_REFS} distinct GitHub issue(s) referenced in this release._"
-              echo
-            fi
 
             # Recent releases rollup (last 5 tags, current first), spotlighting the major release.
             echo

@@ -38,6 +38,11 @@
     <string name="settings_oneui_theme_summary">Match Samsung One UI\'s design language — large rounded corners and bold typography. Color is unaffected; use Material You or a custom accent above for that.</string>
     <string name="settings_one_handed_mode">One-Handed Mode</string>
     <string name="settings_one_handed_mode_summary">Shift interactive content toward the bottom of the screen for comfortable thumb reach</string>
+    <string name="settings_wallpaper">Wallpaper</string>
+    <string name="settings_wallpaper_summary">Background wallpaper theme</string>
+    <string name="settings_wallpaper_original">Original</string>
+    <string name="settings_wallpaper_white_miku">White Miku</string>
+    <string name="settings_wallpaper_black_miku">Black Miku</string>
 
     <string-array name="icon_styles">
         <item>Standard (Filled)</item>

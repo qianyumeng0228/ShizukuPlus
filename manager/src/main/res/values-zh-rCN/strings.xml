@@ -347,6 +347,11 @@
     <string name="settings_oneui_theme_summary"><![CDATA[贴合 Samsung One UI 的设计语言：Samsung Blue 强调色、大圆角和醒目的字重。]]></string>
     <string name="settings_one_handed_mode"><![CDATA[单手模式]]></string>
     <string name="settings_one_handed_mode_summary"><![CDATA[将可交互内容下移，方便单手拇指触达。]]></string>
+    <string name="settings_wallpaper"><![CDATA[壁纸]]></string>
+    <string name="settings_wallpaper_summary"><![CDATA[背景壁纸主题]]></string>
+    <string name="settings_wallpaper_original"><![CDATA[原版]]></string>
+    <string name="settings_wallpaper_white_miku"><![CDATA[白色初音]]></string>
+    <string name="settings_wallpaper_black_miku"><![CDATA[黑色初音]]></string>
     <string name="settings_shape_style"><![CDATA[容器形状样式]]></string>
     <string name="settings_shape_style_summary"><![CDATA[自定义卡片和对话框的圆角]]></string>
     <string name="settings_animation_intensity"><![CDATA[动画强度]]></string>

@@ -14,7 +14,8 @@ class ThemeDelegateImpl : ThemeDelegate {
         return ThemeHelper.getTheme(context) + ThemeHelper.isUsingSystemColor() + customAccent +
             ShizukuSettings.isExpressiveShapesEnabled() + ShizukuSettings.getShapeStyle() +
             ShizukuSettings.getIconStyle() + ShizukuSettings.getIconColorMode() +
-            ShizukuSettings.isOneUiThemeEnabled() + ShizukuSettings.isOneHandedModeEnabled()
+            ShizukuSettings.isOneUiThemeEnabled() + ShizukuSettings.isOneHandedModeEnabled() +
+            ShizukuSettings.getWallpaperTheme()
     }
 
     override fun isUsingSystemColor(): Boolean {

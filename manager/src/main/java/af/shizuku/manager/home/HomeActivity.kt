@@ -78,6 +78,7 @@ open class HomeActivity : AppActivity(), MavericksView {
     private val appsModel: AppsViewModel by viewModels()
     private val adapter by unsafeLazy { HomeAdapter(homeModel, appsModel, lifecycleScope) }
     private var versionClickCount = 0
+    private var wallpaperTheme by mutableStateOf("white_miku")
 
     // Bumped on every onResume to force the Compose content to recompose, so settings changed
     // while in SettingsActivity (e.g. the wallpaper theme) are picked up when returning home.
@@ -189,6 +190,7 @@ open class HomeActivity : AppActivity(), MavericksView {
 
         var showEmptyState by mutableStateOf(false)
         var isEditMode by mutableStateOf(HomeEditMode.isActive)
+        wallpaperTheme = ShizukuSettings.getWallpaperTheme()
         val recyclerView = RecyclerView(this).apply {
             id = android.R.id.list
             clipToPadding = false
@@ -206,6 +208,7 @@ open class HomeActivity : AppActivity(), MavericksView {
                 HomeScreen(
                 isEditMode = isEditMode,
                 showEmptyState = showEmptyState,
+                wallpaperTheme = wallpaperTheme,
                 onStopClick = {
                     if (ShizukuStateMachine.isRunning()) {
                         MaterialAlertDialogBuilder(this)
@@ -571,6 +574,7 @@ open class HomeActivity : AppActivity(), MavericksView {
         // Recompute Compose content so theme/wallpaper setting changes made in SettingsActivity
         // take effect on the home screen without a full activity recreate.
         resumeTick++
+        wallpaperTheme = ShizukuSettings.getWallpaperTheme()
         // Force refresh status on resume
         checkServerStatus()
         // Also reload apps list

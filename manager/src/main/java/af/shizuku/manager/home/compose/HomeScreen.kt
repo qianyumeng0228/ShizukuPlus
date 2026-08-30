@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 fun HomeScreen(
     isEditMode: Boolean,
     showEmptyState: Boolean,
+    wallpaperTheme: String,
     onStopClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onHelpClick: () -> Unit,
@@ -134,6 +136,7 @@ fun HomeScreen(
 }
 }
 
+@Composable
 @Composable
 fun HomeEmptyState(onRestoreHomeCards: () -> Unit) {
     val animationsEnabled = ShizukuSettings.isExpressiveAnimationsEnabled()
