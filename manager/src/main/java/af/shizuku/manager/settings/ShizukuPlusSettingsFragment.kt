@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
@@ -207,6 +208,12 @@ class ShizukuPlusSettingsFragment : BaseSettingsFragment() {
         }
         dhizukuPref.setOnPreferenceChangeListener { _, newValue ->
             if (newValue is Boolean) {
+                val ctx = context ?: return@setOnPreferenceChangeListener false
+                // If trying to enable but not device owner, show setup dialog instead of toggling
+                if (newValue && !isDeviceOwnerActive(ctx)) {
+                    showDhizukuSetupDialog(ctx)
+                    return@setOnPreferenceChangeListener false
+                }
                 ShizukuSettings.setDhizukuModeEnabled(newValue)
                 maybePromptRestart(KEY_DHIZUKU_MODE, newValue) {
                     dhizukuPref.isChecked = newValue
@@ -221,6 +228,21 @@ class ShizukuPlusSettingsFragment : BaseSettingsFragment() {
         clearDoPref?.setOnPreferenceClickListener {
             val ctx = context ?: return@setOnPreferenceClickListener true
             showClearDeviceOwnerDialog(ctx)
+            true
+        }
+
+        // Transfer Device Owner button — only visible when app holds DO status
+        val transferDoPref = findPreference<Preference>("transfer_device_owner")
+        transferDoPref?.isVisible = isDeviceOwnerActive(requireContext())
+        transferDoPref?.setOnPreferenceClickListener {
+            val ctx = context ?: return@setOnPreferenceClickListener true
+            showTransferDeviceOwnerDialog(ctx)
+            true
+        }
+
+        // Dhizuku App Management — list apps that may use the Dhizuku (device-owner) API
+        findPreference<Preference>("dhizuku_app_management")?.setOnPreferenceClickListener {
+            startActivity(Intent(requireContext(), DhizukuAppManagementActivity::class.java))
             true
         }
 
@@ -478,8 +500,14 @@ class ShizukuPlusSettingsFragment : BaseSettingsFragment() {
             getString(R.string.dhizuku_status_not_set)
         val baseSummary = getString(R.string.settings_dhizuku_mode_summary)
         pref.summary = "$statusLine\n\n$baseSummary"
-        // Show/hide the Clear Owner button based on active status
+        // If device owner is active, ensure Dhizuku mode is enabled (they go hand-in-hand)
+        if (active && !pref.isChecked) {
+            pref.isChecked = true
+            ShizukuSettings.setDhizukuModeEnabled(true)
+        }
+        // Show/hide the Clear Owner and Transfer Owner buttons based on active status
         findPreference<Preference>("clear_device_owner")?.isVisible = active
+        findPreference<Preference>("transfer_device_owner")?.isVisible = active
     }
 
     private fun showClearDeviceOwnerDialog(ctx: Context) {
@@ -520,13 +548,169 @@ class ShizukuPlusSettingsFragment : BaseSettingsFragment() {
         // so the full class name must be explicit rather than using the shorthand dot notation.
         val command = "adb shell dpm set-device-owner " +
             "${ctx.packageName}/af.shizuku.manager.admin.DhizukuAdminReceiver"
+        val dpmCommand = "dpm set-device-owner " +
+            "${ctx.packageName}/af.shizuku.manager.admin.DhizukuAdminReceiver"
+        val options = arrayOf(
+            getString(R.string.dhizuku_setup_copy),
+            getString(R.string.dhizuku_setup_run_root),
+            getString(R.string.dhizuku_setup_via_dhizuku)
+        )
         MaterialAlertDialogBuilder(ctx)
             .setTitle(R.string.dhizuku_setup_title)
             .setMessage(getString(R.string.dhizuku_setup_message, command))
-            .setPositiveButton(R.string.dhizuku_setup_copy) { _, _ ->
-                val clipboard = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.setPrimaryClip(ClipData.newPlainText("dpm command", command))
-                Toast.makeText(ctx, R.string.dhizuku_setup_copied, Toast.LENGTH_SHORT).show()
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        val clipboard = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("dpm command", command))
+                        Toast.makeText(ctx, R.string.dhizuku_setup_copied, Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> runDeviceOwnerAsRoot(ctx, dpmCommand)
+                    2 -> activateViaDhizuku(ctx)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun isDeviceRooted(): Boolean {
+        return try {
+            val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "id"))
+            val output = process.inputStream.bufferedReader().readText()
+            process.waitFor()
+            output.contains("uid=0")
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun runDeviceOwnerAsRoot(ctx: Context, command: String) {
+        if (!isDeviceRooted()) {
+            Toast.makeText(ctx, R.string.dhizuku_setup_root_required, Toast.LENGTH_LONG).show()
+            return
+        }
+        val progressDialog = MaterialAlertDialogBuilder(ctx)
+            .setTitle(R.string.dhizuku_setup_running)
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val result = try {
+                val process = Runtime.getRuntime().exec(arrayOf("su", "-c", command))
+                val stdout = process.inputStream.bufferedReader().readText()
+                val stderr = process.errorStream.bufferedReader().readText()
+                val exitCode = process.waitFor()
+                if (exitCode == 0 && (stdout + stderr).contains("Success")) {
+                    Result.success(Unit)
+                } else {
+                    val error = (stdout + stderr).trim().ifEmpty { "exit code $exitCode" }
+                    Result.failure(Exception(error))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+            withContext(Dispatchers.Main) {
+                progressDialog.dismiss()
+                if (result.isSuccess) {
+                    Toast.makeText(ctx, R.string.dhizuku_setup_root_success, Toast.LENGTH_LONG).show()
+                    val dhizukuPref = findPreference<TwoStatePreference>(KEY_DHIZUKU_MODE)
+                    if (dhizukuPref != null) {
+                        ShizukuSettings.setDhizukuModeEnabled(true)
+                        dhizukuPref.isChecked = true
+                        updateDhizukuDeviceOwnerStatus(dhizukuPref)
+                    }
+                } else {
+                    val error = result.exceptionOrNull()?.message ?: "Unknown error"
+                    Toast.makeText(ctx, getString(R.string.dhizuku_setup_root_failure, error), Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    private fun activateViaDhizuku(ctx: Context) {
+        val dhizukuPackage = "com.rosan.dhizuku"
+        val intent = ctx.packageManager.getLaunchIntentForPackage(dhizukuPackage)
+        if (intent == null) {
+            MaterialAlertDialogBuilder(ctx)
+                .setTitle(R.string.dhizuku_setup_via_dhizuku)
+                .setMessage(R.string.dhizuku_setup_dhizuku_not_installed)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            return
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        ctx.startActivity(intent)
+        Toast.makeText(ctx, R.string.dhizuku_setup_dhizuku_launch, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showTransferDeviceOwnerDialog(ctx: Context) {
+        if (!isDeviceOwnerActive(ctx)) {
+            Toast.makeText(ctx, R.string.dhizuku_transfer_not_owner, Toast.LENGTH_LONG).show()
+            return
+        }
+        // Scan all apps that declare a DeviceAdminReceiver via the DEVICE_ADMIN_ENABLED action.
+        val pm = ctx.packageName
+        val candidates = mutableListOf<Pair<String, android.content.ComponentName>>()
+        val seenPackages = mutableSetOf<String>()
+        try {
+            val intent = android.content.Intent("android.app.action.DEVICE_ADMIN_ENABLED")
+            val receivers = ctx.packageManager.queryBroadcastReceivers(intent, 0)
+            android.util.Log.d("ShizukuPlusTransfer", "queryBroadcastReceivers returned ${receivers.size} receivers")
+            for (resolveInfo in receivers) {
+                val activityInfo = resolveInfo.activityInfo ?: continue
+                val packageName = activityInfo.packageName
+                android.util.Log.d("ShizukuPlusTransfer", "found receiver: $packageName/${activityInfo.name}")
+                if (packageName == pm) continue // skip self
+                if (seenPackages.contains(packageName)) continue // dedupe by package: some apps declare multiple DPC receivers
+                seenPackages.add(packageName)
+                val name = activityInfo.name
+                val appInfo = activityInfo.applicationInfo
+                val label = appInfo?.loadLabel(ctx.packageManager)?.toString()
+                    ?: activityInfo.loadLabel(ctx.packageManager)?.toString()
+                    ?: packageName
+                val component = android.content.ComponentName(packageName, name)
+                candidates.add(label to component)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ShizukuPlusTransfer", "Exception scanning", e)
+        }
+        android.util.Log.d("ShizukuPlusTransfer", "candidates size: ${candidates.size}")
+        if (candidates.isEmpty()) {
+            Toast.makeText(ctx, R.string.dhizuku_transfer_no_targets, Toast.LENGTH_LONG).show()
+            return
+        }
+        val labels = candidates.map { it.first }.toTypedArray()
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(R.string.dhizuku_transfer_title)
+            .setItems(labels) { _, which ->
+                val (label, component) = candidates[which]
+                confirmTransfer(ctx, label, component)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun confirmTransfer(ctx: Context, label: String, target: android.content.ComponentName) {
+        val dpm = ctx.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(R.string.dhizuku_transfer_confirm_title)
+            .setMessage(getString(R.string.dhizuku_transfer_confirm_message, label))
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                try {
+                    val admin = android.content.ComponentName(ctx, af.shizuku.manager.admin.DhizukuAdminReceiver::class.java)
+                    dpm.transferOwnership(admin, target, null)
+                    Toast.makeText(ctx, getString(R.string.dhizuku_transfer_success, label), Toast.LENGTH_LONG).show()
+                    // Update UI: Shizuku+ is no longer device owner
+                    val dhizukuPref = findPreference<TwoStatePreference>(KEY_DHIZUKU_MODE)
+                    if (dhizukuPref != null) {
+                        ShizukuSettings.setDhizukuModeEnabled(false)
+                        dhizukuPref.isChecked = false
+                        updateDhizukuDeviceOwnerStatus(dhizukuPref)
+                    }
+                } catch (e: Exception) {
+                    val error = e.message ?: e.javaClass.simpleName
+                    Toast.makeText(ctx, getString(R.string.dhizuku_transfer_failure, error), Toast.LENGTH_LONG).show()
+                }
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()

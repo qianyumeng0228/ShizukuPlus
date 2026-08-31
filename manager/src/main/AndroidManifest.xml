@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- NOTE: We do NOT declare the com.rosan.dhizuku.permission.API permission here. It is
+         already owned by the standalone dhizuku app; redeclaring it would fail install with
+         INSTALL_FAILED_DUPLICATE_PERMISSION. App management instead discovers candidate apps by
+         checking their requestedPermissions for that name (no own declaration needed). -->
+
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Best-effort only: runtime-revocable, and code falls back to an inexact wake via
          canScheduleExactAlarms() if declined/unavailable (see WatchdogAlarmReceiver). -->
@@ -212,6 +217,11 @@
             android:name=".settings.RootCompatibilityActivity"
             android:exported="false"
             android:label="@string/su_bridge_title" />
+        <activity
+            android:name=".settings.DhizukuAppManagementActivity"
+            android:theme="@style/Theme"
+            android:exported="false"
+            android:label="@string/dhizuku_app_management_title" />
         <activity
             android:name=".settings.ServiceDoctorActivity"
             android:theme="@style/Theme"
@@ -438,7 +448,7 @@
 
         <provider
             android:name=".DhizukuProvider"
-            android:authorities="${dhizukuAuthorities}"
+            android:authorities="${applicationId}.dhizuku_server.provider"
             android:directBootAware="true"
             android:enabled="true"
             android:exported="true"

@@ -1016,6 +1016,14 @@
     <string name="dhizuku_setup_message">Dhizuku Mode requires Shizuku+ to be set as Device Owner. Run this command once via ADB while USB debugging is enabled:\n\n%1$s\n\nAfter running the command, restart Shizuku.</string>
     <string name="dhizuku_setup_copy">Copy Command</string>
     <string name="dhizuku_setup_copied">Command copied to clipboard</string>
+    <string name="dhizuku_setup_run_root">Run with Root</string>
+    <string name="dhizuku_setup_root_required">Root access is required for one-tap execution. Please grant Root access, or run the command above manually on your computer.</string>
+    <string name="dhizuku_setup_running">Executing...</string>
+    <string name="dhizuku_setup_root_success">Device Owner set successfully! Please restart Shizuku+.</string>
+    <string name="dhizuku_setup_root_failure">Execution failed: %1$s\nPlease run the command above manually on your computer.</string>
+    <string name="dhizuku_setup_via_dhizuku">Activate via Dhizuku</string>
+    <string name="dhizuku_setup_dhizuku_not_installed">Dhizuku app not found. Please install Dhizuku and set it as Device Owner first, then transfer the permission through it.</string>
+    <string name="dhizuku_setup_dhizuku_launch">Open Dhizuku</string>
     <string name="dhizuku_status_active">Device Owner: Active</string>
     <string name="dhizuku_status_not_set">Device Owner not set — tap for setup instructions</string>
 
@@ -1027,6 +1035,16 @@
     <string name="dhizuku_clear_owner_confirm">Remove</string>
     <string name="dhizuku_clear_owner_success">Device Owner status removed. You can now uninstall or downgrade Shizuku+.</string>
     <string name="dhizuku_clear_owner_failure">Failed to remove Device Owner status. The service may need to be running first.</string>
+    <string name="settings_transfer_device_owner">Transfer Device Owner</string>
+    <string name="settings_transfer_device_owner_summary">Transfer Device Owner status to another app that supports ownership transfer. Shizuku+ will lose Device Owner privileges after transfer.</string>
+    <string name="dhizuku_transfer_title">Select Target App</string>
+    <string name="dhizuku_transfer_message">Select the app to receive Device Owner status. The target app must declare ownership transfer support in its device_admin.xml.</string>
+    <string name="dhizuku_transfer_no_targets">No apps supporting ownership transfer found.</string>
+    <string name="dhizuku_transfer_confirm_title">Confirm transfer?</string>
+    <string name="dhizuku_transfer_confirm_message">Device Owner status will be transferred to \"%1$s\".\n\nShizuku+ will lose Device Owner privileges and Dhizuku Mode will be disabled. This action cannot be undone.</string>
+    <string name="dhizuku_transfer_success">Device Owner successfully transferred to \"%1$s\".</string>
+    <string name="dhizuku_transfer_failure">Transfer failed: %1$s</string>
+    <string name="dhizuku_transfer_not_owner">Transfer is only available when Shizuku+ is the current Device Owner.</string>
 
     <!-- Pairing fallback (Issue #204) -->
     <string name="toast_pair_notifications_required">Notifications are blocked — using manual pairing. Go to Developer Options → Wireless debugging → Pair device with pairing code to get your code, then enter it here.</string>
@@ -1153,4 +1171,13 @@
     <string name="cd_settings_search_clear">Clear</string>
     <string name="settings_search_hint">Search settings…</string>
     <string name="settings_search_empty_state">No settings found</string>
+
+    <!-- Dhizuku App Management (ported from dhizuku) -->
+    <string name="dhizuku_app_management_title">Dhizuku 应用管理</string>
+    <string name="dhizuku_app_management_summary">管理可访问 Dhizuku（设备所有者）API 的应用</string>
+    <string name="dhizuku_app_management_empty">未找到使用 Dhizuku 权限的应用\n\n应用需在清单中声明 com.rosan.dhizuku.permission.API 才能在此列出。</string>
+    <string name="dhizuku_allow_access">允许访问 Dhizuku</string>
+    <string name="dhizuku_app_blocked_notice">应用已被屏蔽，无法使用 Dhizuku 服务</string>
+    <string name="dhizuku_block_app">屏蔽应用</string>
+    <string name="dhizuku_unblock_app">取消屏蔽</string>
 </resources>

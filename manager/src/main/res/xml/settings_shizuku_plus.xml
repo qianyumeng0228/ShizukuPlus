@@ -114,6 +114,21 @@
             android:icon="@drawable/ic_delete_24"
             android:visible="false" />
 
+        <!-- Only shown when app is active Device Owner; tapping transfers DO to another app -->
+        <Preference
+            android:key="transfer_device_owner"
+            android:title="@string/settings_transfer_device_owner"
+            android:summary="@string/settings_transfer_device_owner_summary"
+            android:icon="@drawable/ic_swap_horiz_24"
+            android:visible="false" />
+
+        <!-- Dhizuku app management: list & control which apps may use the Dhizuku API -->
+        <Preference
+            android:key="dhizuku_app_management"
+            android:title="@string/dhizuku_app_management_title"
+            android:summary="@string/dhizuku_app_management_summary"
+            android:icon="@drawable/ic_admin_panel_settings_24" />
+
         <af.shizuku.manager.settings.CollapsiblePreferenceCategory
             android:key="category_dhizuku_admin"
             android:title="@string/settings_device_owner_tools_category_title"

@@ -24,10 +24,12 @@ android {
         buildConfigField "String", "SENTRY_DSN", "\"${sentryDsn}\""
         manifestPlaceholders = [
             sentryDsn: sentryDsn,
-            // Dhizuku content-provider authorities. Release keeps the well-known fixed value;
-            // the debug build (applicationIdSuffix ".debug") overrides this to a package-scoped
-            // value so it can install alongside the store build without a provider conflict.
-            dhizukuAuthorities: "com.rosan.dhizuku;com.rosan.dhizuku.provider",
+            // Dhizuku content-provider authority is defined directly in AndroidManifest.xml
+            // as ${applicationId}.dhizuku_server.provider - the exact authority the official
+            // Dhizuku client SDK resolves from the device-owner package name (see
+            // DhizukuVariables.getProviderAuthorityName). Keeping it package-scoped means the
+            // debug build (applicationIdSuffix ".debug") and every flavor resolve correctly
+            // with no provider conflict against an installed standalone Dhizuku.
         ]
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -76,9 +78,7 @@ android {
             // Debug/test builds install alongside the store build instead of replacing it:
             // af.shizuku.plus.api -> af.shizuku.plus.api.debug
             applicationIdSuffix = ".debug"
-            // Unique Dhizuku provider authorities for the side-by-side debug build (see
-            // defaultConfig.manifestPlaceholders.dhizukuAuthorities).
-            manifestPlaceholders = [dhizukuAuthorities: "af.shizuku.plus.api.debug.dhizuku;af.shizuku.plus.api.debug.dhizuku.provider"]
+            // Dhizuku provider authority is resolved from ${applicationId} in the manifest.
         }
         release {
             signingConfig = signingConfigs.sign

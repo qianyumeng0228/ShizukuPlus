@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/m3e_spacing_medium"
+    android:layout_marginVertical="6dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+    app:cardElevation="0dp"
+    app:shapeAppearanceOverlay="?attr/shapeAppearanceCornerExtraLarge">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/m3e_spacing_medium">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/app_icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:importantForAccessibility="no"
+                tools:src="@drawable/ic_launcher" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/m3e_spacing_large"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/app_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="?textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    tools:text="Application" />
+
+                <TextView
+                    android:id="@+id/app_package"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="?textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="com.example.app" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Allow-access-to-Dhizuku switch row -->
+        <LinearLayout
+            android:id="@+id/allow_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/m3e_spacing_medium"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dhizuku_allow_access"
+                android:textAppearance="?textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurface" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/allow_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Blocked notice (visible only when blocked) -->
+        <LinearLayout
+            android:id="@+id/blocked_notice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/m3e_spacing_medium"
+            android:background="?attr/colorErrorContainer"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/m3e_spacing_small"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_close_24"
+                app:tint="?attr/colorError" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/dhizuku_app_blocked_notice"
+                android:textAppearance="?textAppearanceBodySmall"
+                android:textColor="?attr/colorError" />
+        </LinearLayout>
+
+        <!-- Block / unblock button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/block_button"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/m3e_spacing_medium"
+            android:text="@string/dhizuku_block_app"
+            android:textColor="?attr/colorError"
+            app:icon="@drawable/ic_close_24"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/colorError" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
